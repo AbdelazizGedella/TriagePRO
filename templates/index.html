@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+    <script src="https://unpkg.com/flowbite"></script>
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTAS Level Predictor</title>
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
+
+    <!-- Bootstrap CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://unpkg.com/flowbite"></script>
+    <!-- Bootstrap JS -->
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+ <script>
+     // Function to toggle pain fields
+     function togglePainFields() {
+        const painScaleInput = document.getElementById("pain_scale");
+        const locationField = document.getElementById("location_field");
+        const durationField = document.getElementById("duration_field");
+        // Check if the Pain Scale value is 0
+        if (painScaleInput.value === "0") {
+            locationField.style.display = "none"; // Hide Location of Pain
+            durationField.style.display = "none"; // Hide Pain Duration
+        } else {
+            locationField.style.display = "block"; // Show Location of Pain
+            durationField.style.display = "block"; // Show Pain Duration
+        }
+    }
+    // Initialize the visibility of pain fields on page load
+    window.onload = function () {
+        togglePainFields(); // Initialize pain fields visibility
+    };
+    function validatePainScale() {
+        const painScaleInput = document.getElementById("pain_scale");
+        // Ensure the value stays within the allowed range
+        if (painScaleInput.value > 10) {
+            painScaleInput.value = 10;
+        } else if (painScaleInput.value < 0) {
+            painScaleInput.value = 0;
+        }
+    }
+ ;
+ </script>
+<script>
+    async function handleFeedback(event) {
+        event.preventDefault(); // Prevent form submission
+        const decision = document.getElementById("feedback_decision").value;
+        const feedbackText = document.getElementById("feedback_text").value;
+        // Prepare feedback data
+        const feedbackData = {
+            decision: decision,
+            feedback_text: feedbackText || "No additional feedback provided",
+            timestamp: new Date().toISOString(),
+        };
+        // Send feedback to the server (JSON file)
+        try {
+            await fetch("/save-feedback", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(feedbackData),
+            });
+            // Show pop-up notification
+            const popup = document.getElementById("popupNotification");
+            popup.style.display = "block";
+            setTimeout(() => {
+                popup.style.display = "none";
+            }, 3000);
+            // Reset the form
+            document.getElementById("feedbackForm").reset();
+        } catch (error) {
+            console.error("Error saving feedback:", error);
+        }
+    }
+</script>
+    <style>
+        body {
+            background-color: #02051b; /* Blue Charcoal */
+            font-size: 12px;
+            color: white;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #1a1f36;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.4);
+        }
+        h1, h2 {
+            color: #00d4ff; /* Accent Light Blue */
+        }
+        input, select, textarea {
+            background-color: #2d344a;
+            color: white;
+            border: 1px solid #4b556d;
+        }
+        input:focus, select:focus, textarea:focus {
+            background-color: #3a4157;
+            border-color: #00d4ff;
+            outline: none;
+        }
+        .btn-primary {
+            background-color: #00d4ff;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #008bbd;
+        }
+        .button {
+            padding: 10px 20px;
+            background-color: #00d4ff;
+            color: #02051b;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .button.active {
+            background-color: red;
+        }
+        #temp_buttons {
+            display: none;
+            margin-top: 15px;
+        }
+        .greeting-section {
+        background-color: #02051b; /* Blue Charcoal */
+        color: white;
+        padding: 20px;
+        font-family: 'Arial', sans-serif;
+        border-bottom: 1px solid #3a4157; /* Subtle divider */
+    }
+    .greeting-section p {
+        margin: 0;
+        font-size: 1.5rem; /* Slightly smaller greeting text */
+        color: #a8b1c0; /* Subtle light gray text */
+    }
+    .greeting-section h1 {
+        margin: 0;
+        font-size: 2.5rem; /* Bold and prominent text */
+        font-weight: bold;
+        color: #ffffff; /* Bright white */
+    }
+    .custom-button {
+        background-color: #3b82f6; /* Blue background */
+        color: white; /* White text */
+        border: none; /* No border */
+        padding: 10px 20px; /* Padding for size */
+        border-radius: 20px; /* Rounded edges */
+        font-size: 16px; /* Font size */
+        font-weight: bold; /* Bold text */
+        text-align: center; /* Center text */
+        cursor: pointer; /* Pointer cursor on hover */
+        transition: background-color 0.3s ease; /* Smooth hover effect */
+    }
+    .custom-button:hover {
+        background-color: #2563eb; /* Darker blue on hover */
+    }
+    .custom-button:focus {
+        outline: none; /* Remove outline on focus */
+    }
+    /* Container for the categories */
+    .category-container {
+        display: flex;
+        justify-content: space-around; /* Space between items */
+        align-items: center; /* Align items vertically */
+        padding: 20px 0;
+    }
+    /* Individual items */
+    .category-item {
+        text-align: center;
+        cursor: pointer;
+    }
+    /* Emoji styling */
+    .category-item .emoji {
+        font-size: 2rem; /* Emoji size */
+        margin-bottom: 5px; /* Spacing below emoji */
+    }
+    /* Text styling */
+    .category-item h3 {
+        font-size: 1rem; /* Text size */
+        font-weight: bold; /* Bold text */
+        color: #a8a8a8; /* Gray text color */
+        border-bottom: 2px solid #a8a8a8; /* Gray underline */
+        display: inline-block;
+        padding-bottom: 3px;
+        margin: 0;
+        transition: color 0.3s ease, border-color 0.3s ease;
+    }
+    /* Hover effect */
+    .category-item:hover h3 {
+        color: #ffffff; /* White text on hover */
+        border-color: #ffffff; /* White underline on hover */
+    }
+    .table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 10px; /* Add spacing between rows */
+        background-color: #0d0d38;
+    }
+    .table th {
+        font-size: 1rem;
+        text-transform: uppercase;
+        font-weight: bold;
+    }
+    .table td {
+        font-size: 1rem;
+        background-color: #0d0d38;
+    }
+    .table tbody tr {
+        border-radius: 10px;
+    }
+
+
+    .box {
+            width: 200px;
+            height: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background-color: rgba(255, 255, 255, 0);
+            padding: 20px;
+        }
+
+        .emoji {
+            font-size: 40px;
+        }
+
+        .grey-text {
+            color: grey;
+        }
+
+        .bold-number {
+            color: white;
+            font-weight: bold;
+            font-size: 32px;
+        }
+
+        .box span {
+            display: block;
+            margin: 5px 0;
+        }
+
+
+        .div-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+   
+
+    
+    <nav class="bg-[#03051b] shadow-md w-full">
+        <div class="bg-[#03051b] shadow-md w-full">
+            <!-- Logo -->
+             
+    <div class="container mt-4" style="backdrop-filter: blur(10px); border-radius: 10px; padding: 20px 30px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2); background: none;">
+        <div style="flex: 1; text-align: center;">
+            <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Triage<span class="bg-blue-100 text-blue-800 text-2xl font-semibold me-2 px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800 ms-2">PRO</span></span>
+        </div></div>
+            
+            <!-- Navigation Links -->
+          
+        </div>
+    </nav>
+    
+
+    <div class="container mt-4" style="backdrop-filter: blur(10px); border-radius: 10px; padding: 20px 30px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2); background: none;">
+        <div style="flex: 1; text-align: left;">
+            <h1 class="mb-4 text-3xl font-extrabold text-white-200 dark:text-white md:text-5xl lg:text-6xl"><span class="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">Clinical Decision Supporter</span> Triage AI.</h1>
+    <p class="text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400">Streamline clinical decision-making with our rule-based and machine learning-powered triage system. Designed for nurses and physicians, this tool helps save time by evaluating hospitalization needs through a hospital database, ensuring accurate and timely care recommendations...</p>
+    
+    <br><br>
+    
+          
+    <div class="container mt-4" style="backdrop-filter: blur(10px); border-radius: 10px; padding: 20px 30px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2); background: none;">
+        <div style="flex: 1; text-align: center;">
+      
+
+<div class="div-box">
+
+    <div class="box">
+        <div class="emoji">📜</div>
+        <span class="grey-text">Rules Count</span>
+        <span class="bold-number">107+</span>
+        <span class="grey-text">Last Update: 2025/01/25</span>
+    </div>
+    
+    <div class="box">
+        <div class="emoji">🔢</div>
+        <span class="grey-text">Variables</span>
+        <span class="bold-number">♾️</span>
+        <span class="grey-text">Last Update: 2025/01/25</span>
+    </div>
+    
+    <div class="box">
+        <div class="emoji">✅</div>
+        <span class="grey-text">Accepted Requests</span>
+        <span class="bold-number" style="color: rgb(237, 159, 219);">....BETA</span>
+        <span class="grey-text">Accepted</span>
+    </div>
+    
+    <div class="box">
+        <div class="emoji">🔌</div>
+        <span class="grey-text">API</span>
+        <span class="bold-number" style="color: rgb(159, 237, 159);">Ready</span>
+        <span class="grey-text">Integration</span>
+    </div>
+    
+    </div>
+
+</div></div>
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<ol class="flex items-center w-full text-sm font-medium text-center sm:text-base">
+    <!-- Step 1: Enter Data -->
+    <li class="flex md:w-full items-center text-[#00d4ff] sm:after:content-[''] after:w-full after:h-1 after:border-b after:border-gray-200 after:border-1 after:hidden sm:after:inline-block after:mx-6 xl:after:mx-10 dark:after:border-gray-700">
+        <span class="flex items-center after:content-['/'] sm:after:hidden after:mx-2 after:text-gray-200 dark:after:text-gray-500">
+            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 me-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z"/>
+            </svg>
+            Enter <span class="hidden sm:inline-flex sm:ms-2">Data</span>
+        </span>
+    </li>
+
+    <!-- Step 2: Predict with Confidence -->
+    <li class="flex md:w-full items-center text-green-500">
+        <span class="flex items-center after:content-[''] sm:after:hidden after:mx-2 after:text-gray-200 dark:after:text-gray-500">
+            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 me-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z"/>
+            </svg>
+            Predict with Confidence!
+        </span>
+    </li>
+</ol>
+
+
+<h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight text-white-900 md:text-5xl lg:text-6xl dark:text-blue">AI-Powered <span class="text-blue-600 dark:text-blue-500">Triage Module<span class="bg-blue-100 text-blue-800 text-2xl font-semibold me-2 px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800 ms-2">PRO</span></span>.</h1>
+<p class="text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400">Efficiently determining triage levels using a rule-based approach for accurate and timely decision-making..</p>
+
+
+</div>
+</div>
+
+
+
+
+  
+
+
+ 
+
+
+
+
+
+        <form action="/process" method="post" class="mt-4">
+            <!-- Vital Signs -->
+            <div class="container text-center" style="background: #090e39; backdrop-filter: blur(10px); border-radius: 10px; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);">
+                <h2 class="text-start" style="font-size: 18px;">📋 Vital Signs</h2>
+                <div class="row row-cols-20">
+                    <div class="col">
+                    <label for="systolic" class="form-label">SP:</label>
+                    <input type="number" name="systolic" class="form-control" required>
+                    </div>
+                    <div class="col">
+                        <label for="diastolic" class="form-label">DP:</label>
+                        <input type="number" name="diastolic" class="form-control" required>
+                    </div>
+                    <div class="col">
+                        <label for="temp" class="form-label">Temp (°C):</label>
+                        <input type="number" name="temp" id="temp" class="form-control" step="0.1" min="35.0" max="42.0" required>
+                    </div>
+                    <div class="col">
+                        <label for="hr" class="form-label">Pulse:</label>
+                        <input type="number" name="hr" class="form-control" required>
+                    </div>
+                    <div class="col">
+                    <label for="blood_glucose" class="form-label">RBS:</label>
+                    <input type="number" name="blood_glucose" id="blood_glucose" class="form-control" step="1" required>
+                </div>
+                    <div class="col">
+                        <label for="o2_sat" class="form-label">O<sub>2</sub> (%):</label>
+                        <input type="number" name="o2_sat" class="form-control" required>
+                    </div>
+                    <div class="col">
+                        <label for="rr" class="form-label">RR:</label>
+                        <input type="number" name="rr" class="form-control" required>
+                    </div>
+                    <div class="col">
+                        <label for="gcs" class="form-label">GCS:</label>
+                        <input type="number" name="gcs" class="form-control" required>
+                    </div>
+                 </div>
+                     </div>
+                     <div class="container text-center" style="background: #090e39; backdrop-filter: blur(10px); border-radius: 10px; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);">
+                        <h2 class="text-start" style="font-size: 18px;">🤕 Pain Assessment</h2>
+                        <div class="row g-3 align-items-center">
+                            <!-- Pain Scale Input -->
+                            <div class="col-md-4">
+                                <label for="pain_scale" class="form-label">Pain Scale (0-10):</label>
+                                <input
+                                    value="0"
+                                    type="number"
+                                    name="pain_scale"
+                                    id="pain_scale"
+                                    class="form-control"
+                                    min="0"
+                                    max="10"
+                                    step="1"
+                                    required
+                                    oninput="validatePainScale(); togglePainFields()"
+                                    >
+                            </div>
+                            <!-- Location of Pain Dropdown -->
+                            <div class="col-md-4" id="location_field">
+                                <label for="location_of_pain" class="form-label">Location of Pain:</label>
+                                <select id="location_of_pain" name="location_of_pain" class="form-select" required>
+                                    <option value="#">#</option>
+                                    <option value="Central">Central</option>
+                                    <option value="Peripheral">Peripheral</option>
+                                </select>
+                            </div>
+                            <!-- Pain Duration Dropdown -->
+                            <div class="col-md-4" id="duration_field">
+                                <label for="pain_duration" class="form-label">Pain Duration:</label>
+                                <select id="pain_duration" name="pain_duration" class="form-select" required>
+                                    <option value="#">#</option>
+                                    <option value="Acute">Acute</option>
+                                    <option value="Chronic">Chronic</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container text-center" style="background: #090e39; backdrop-filter: blur(10px); border-radius: 10px; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);">
+                        <h2 class="text-start" style="font-size: 18px;">⚙️ Modifiers</h2>
+                        <div class="row g-3 align-items-center">
+                            <!-- Location of Pain Dropdown -->
+                            <div class="col-md-4" id="location_field">
+                                <label for="symptoms_present">Blood Pressure Associated Symptoms</label>
+                                <select id="symptoms_present" name="symptoms_present" class="form-select" required>
+                                    <option value="no">No</option>
+                                    <option value="yes">headache/nausea/sob/chestpain</option>
+                                    </select>
+                            </div>
+                            <div class="col-md-4" id="duration_field">
+                                <label for="distress_level" class="form-label">Distress Level:</label>
+                                <select id="distress_level" name="distress_level" class="form-select" required>
+                                    <option value="None">None</option>
+                                    <option value="Severe">Severe</option>
+                                    <option value="Moderate">Moderate</option>
+                                    <option value="Mild">Mild</option>
+                                </select>                  
+                            </div>
+                            <div class="col-md-4" id="duration_field">
+                                <label for="blood_glucose_symptoms" class="form-label">Blood Glucose Symptoms:</label>
+                                <select id="blood_glucose_symptoms" name="blood_glucose_symptoms" class="form-select" required>
+                                    <option value="None">None</option>
+                                    <option value="Confusion">Confusion</option>
+                                    <option value="Diaphoresis">Diaphoresis</option>
+                                    <option value="Behavioural Change">Behavioural Change</option>
+                                    <option value="Seizure">Seizure</option>
+                                    <option value="Acute Focal Deficits">Acute Focal Deficits</option>
+                                    <option value="Dyspnea">Dyspnea</option>
+                                    <option value="Dehydration">Dehydration</option>
+                                    <option value="Tachypnea">Tachypnea</option>
+                                    <option value="Thirst">Thirst</option>
+                                    <option value="Polyuria">Polyuria</option>
+                                    <option value="Weakness">Weakness</option>
+                                    <option value="None">None</option>
+                                </select>   
+                            </div>
+                        </div>
+                    </div>
+                     <div class="container text-center" style="background: #090e39; backdrop-filter: blur(10px); border-radius: 10px; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);">
+                        <h2 class="text-start" style="font-size: 18px;">🧑‍⚕️ Patient Information</h2>
+                        <div class="row row-cols-20">
+                            <div class="col">
+                                <label for="chief_complaint" class="form-label">Chief Complaint:</label>
+                                <textarea name="chief_complaint" class="form-control" required></textarea>
+                            </div>
+                            <div class="col">
+                                <label for="history" class="form-label">History:</label>
+                                <textarea name="history" class="form-control" required></textarea>
+                            </div>
+    </div>    
+           </div>
+            <!-- Submit Button -->
+            <div class="d-flex justify-content-center">
+                <button type="submit" class="custom-button">Predict CTAS Level</button>
+            </div>
+        </form>
+        {% if ctas_level %}
+      <!-- Input Summary Section -->
+<div class="container mt-5" style="background-color: #0d0d38; padding: 20px; border-radius: 10px;">
+    <h2 class="text-start" style="color: #00d4ff;">Input Summary</h2>
+    <div class="row g-4">
+        <!-- Vital Signs -->
+        <div class="col-md-6">
+            <p><strong>📋 Vital Signs</strong></p>
+            <ul style="list-style: none; padding-left: 0; color: #a8b1c0;">
+                <li>Systolic: <span style="color: white;">{{ systolic }}</span></li>
+                <li>Diastolic: <span style="color: white;">{{ diastolic }}</span></li>
+                <li>Temperature: <span style="color: white;">{{ temp }} °C</span></li>
+                <li>Pulse: <span style="color: white;">{{ hr }}</span></li>
+                <li>Respiratory Rate: <span style="color: white;">{{ rr }}</span></li>
+                <li>Oxygen Saturation: <span style="color: white;">{{ o2_sat }}%</span></li>
+                <li>Blood Glucose: <span style="color: white;">{{ blood_glucose }}</span></li>
+                <li>GCS: <span style="color: white;">{{ gcs }}</span></li>
+            </ul>
+        </div>
+        <!-- Pain Assessment -->
+        <div class="col-md-6">
+            <p><strong>🤕 Pain Assessment</strong></p>
+            <ul style="list-style: none; padding-left: 0; color: #a8b1c0;">
+                <li>Pain Scale: <span style="color: white;">{{ pain_scale }}</span></li>
+                <li>Location of Pain: <span style="color: white;">{{ location_of_pain }}</span></li>
+                <li>Pain Duration: <span style="color: white;">{{ pain_duration }}</span></li>
+            </ul>
+        </div>
+        <!-- Modifiers -->
+        <div class="col-md-6">
+            <p><strong>⚙️ Modifiers</strong></p>
+            <ul style="list-style: none; padding-left: 0; color: #a8b1c0;">
+                <li>Blood Pressure Symptoms: <span style="color: white;">{{ symptoms_present }}</span></li>
+                <li>Distress Level: <span style="color: white;">{{ distress_level }}</span></li>
+                <li>Blood Glucose Symptoms: <span style="color: white;">{{ blood_glucose_symptoms }}</span></li>
+            </ul>
+        </div>
+        <!-- Patient Information -->
+        <div class="col-md-6">
+            <p><strong>🧑‍⚕️ Patient Information</strong></p>
+            <ul style="list-style: none; padding-left: 0; color: #a8b1c0;">
+                <li>Chief Complaint: <span style="color: white;">{{ chief_complaint }}</span></li>
+                <li>History: <span style="color: white;">{{ history }}</span></li>
+            </ul>
+        </div>
+    </div>
+</div>
+<!-- Spacer Section -->
+<!-- Recommended CTAS Section -->
+<div class="container mt-5 d-flex justify-content-center align-items-center" 
+     style="background-color: #0d0d38; padding: 20px; border-radius: 10px; height: 400px;">
+    <!-- Row for CTAS Number and Gauge Chart -->
+    <div class="row text-center w-100 align-items-center">
+        <!-- CTAS Level Text -->
+        <div class="col-md-6">
+            <h1 class="text-white" style="font-size: 12rem; font-weight: bold;">{{ ctas_level }}</h1>
+        </div>
+        <!-- Gauge Chart -->
+    </div>
+</div>
+        <div class="container mt-5" style="background-color: #0d0d38; padding: 20px; border-radius: 10px;">
+            <h2 class="text-start" style="color: #00d4ff;">CTAS Interpretation</h2>
+            <div class="d-flex flex-row justify-content-between align-items-start">
+                <!-- Left Section: Interpretation List -->
+                <div style="width: 50%; padding-right: 20px;">
+                    <table class="table table-borderless text-white">
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <ul class="list-group mt-3">
+                                        {% set sorted_reasons = reason|sort(attribute='ctas_level') %}
+                                        {% for item in sorted_reasons %}
+                                                                            <li 
+                                                                            class="background-color: transparent;"
+                                                                            class="list-group-item"
+                                        {% if 'CTAS 1' in item %}
+                                            style="color: #0000FF;"  
+                                        {% elif 'CTAS 2' in item %}
+                                            style="color: #FF0000;"  
+                                        {% elif 'CTAS 3' in item %}
+                                            style="color: #FFFF00; font-weight: bold;"
+                                        {% elif 'CTAS 4' in item %}
+                                            style="color: #00FF00;"
+                                        {% elif 'CTAS 5' in item %}
+                                            style="color: #FFFFFF; font-weight: bold;"  
+                                        {% endif %}
+                                    >
+    {{ item }}
+</li>
+                                        {% endfor %}
+                                    </ul>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Right Section: Radar Chart -->
+                <div style="width: 50%; text-align: center;">
+                    <img 
+                        src="/radar_chart?reason={{ reason | join(',') | urlencode }}" 
+                        alt="CTAS Radar Chart" 
+                        class="img-fluid"
+                        style="max-width: 100%;"
+                    />
+                </div>
+            </div>
+        </div>
+        <style>
+            .ctas-1 {
+                color: #0000FF; /* Blue */
+            }
+            .ctas-2 {
+                color: #FF0000; /* Red */
+            }
+            .ctas-3 {
+                color: #FFFF00; /* Yellow */
+                font-weight: bold;
+            }
+            .ctas-4 {
+                color: #00FF00; /* Green */
+            }
+            .ctas-5 {
+                color: #FFFFFF; /* White */
+                font-weight: bold;
+            }
+            .list-group-item {
+                background-color: transparent; /* Keep the background clear */
+                border: none; /* Remove borders for the list items */
+            }
+        </style>
+    <div class="container mt-5 text-center" style="background-color: #1a1f36; padding: 20px; border-radius: 10px;">
+        <!-- Feedback Section -->
+        <h3 style="color: #00d4ff;" class="mt-4">We Value Your Feedback   </h3>        
+        <form id="feedbackForm" onsubmit="handleFeedback(event)">
+            <div class="form-group mt-3">
+                <label for="feedback_decision" style="color: #a8b1c0;">Do you accept the CTAS recommendations?</label>
+                <select id="feedback_decision" name="feedback_decision" class="form-select mt-2" required>
+                    <option value="">-- Select an option --</option>
+                    <option value="accept">Accept</option>
+                    <option value="decline">Decline</option>
+                </select>
+            </div>
+            <div class="form-group mt-3">
+                <label for="feedback_text" style="color: #a8b1c0;">If you declined, please let us know why:</label>
+                <textarea
+                    id="feedback_text"
+                    name="feedback_text"
+                    class="form-control mt-2"
+                    rows="3"
+                    placeholder="Enter your feedback here..."
+                    style="background-color: #2d344a; color: white; border: 1px solid #4b556d;"
+                ></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3" style="background-color: #00d4ff; border: none;">Submit Feedback</button>
+        </form>
+    </div>
+    <!-- Pop-Up Notification -->
+    <div id="popupNotification" class="alert alert-success text-center" style="display: none; position: fixed; top: 20%; left: 50%; transform: translate(-50%, -50%); background-color: #1a1f36; color: #ffffff; border-radius: 10px; padding: 20px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5); z-index: 1000;">
+        Thank you for providing your feedback!
+    </div>
+    {% endif %}
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+</html>
