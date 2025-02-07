@@ -31,10 +31,12 @@ Clone the repository and install the required dependencies:
 ```
 
 ## Usage
+<img width="1279" alt="Homepage" src="https://github.com/user-attachments/assets/4fcda6df-0ac6-450f-9612-acbd258c67a5"/>
 Run the application on the app file run that code:
 ```bash
  uvicorn app.main:app --reload
 ```
+
 
 This tool is intended for use in emergency departments, by paramedics, and in urgent care centers to enhance decision-making and reduce triage time.
 
