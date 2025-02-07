@@ -45,7 +45,10 @@ This project is licensed under the MIT License. See the LICENSE file for details
 ## Contact
 For more information or to contribute to this project, please contact:
 ```bash
-**[Abdelziz Gedelleila]** - [Abdelazizgedella@gmail.com]
+**[Abdelziz Gedelleila]**
+```
+```bash
+Abdelazizgedella@gmail.com]
 ```
 ---
 
