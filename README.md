@@ -1,5 +1,7 @@
-Triage PRO 🚑
-An AI-powered triage system for immediate CTAS prediction
+**Triage PRO** 🚑
+
+- An AI-powered triage system for immediate CTAS prediction
+
 
 Triage PRO is a fast and intelligent triage tool that predicts the Canadian Triage and Acuity Scale (CTAS) level based on patient vital signs and a few key chief complaint details. It helps healthcare providers make quick, data-driven decisions in emergency settings.
 
