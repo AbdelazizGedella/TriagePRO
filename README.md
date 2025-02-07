@@ -18,15 +18,15 @@ TriagePRO is an AI-driven system designed to predict the Canadian Triage and Acu
 ## Installation
 Clone the repository and install the required dependencies:
 ```bash
- git clone https://github.com/your-username/TriagePRO.git
+ git clone https://github.com/AbdelazizGedella/TriagePRO.git
  cd TriagePRO
  pip install -r requirements.txt
 ```
 
 ## Usage
-Run the application:
+Run the application on the app file run that code:
 ```bash
- python main.py
+ uvicorn app.main:app --reload
 ```
 
 This tool is intended for use in emergency departments, by paramedics, and in urgent care centers to enhance decision-making and reduce triage time.
@@ -44,8 +44,9 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 ## Contact
 For more information or to contribute to this project, please contact:
-**[Your Name]** - [Your Email]
-
+```bash
+**[Abdelziz Gedelleila]** - [Abdelazizgedella@gmail.com]
+```
 ---
 
 *This project is developed to improve emergency triage efficiency using AI-driven predictions.*
