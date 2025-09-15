@@ -1,689 +1,1030 @@
 <!DOCTYPE html>
 <html lang="en">
-    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
-    <script src="https://unpkg.com/flowbite"></script>
-    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CTAS Level Predictor</title>
-    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CTAS Level Predictor</title>
 
-    <!-- Bootstrap CSS -->
-    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script src="https://unpkg.com/flowbite"></script>
-    <!-- Bootstrap JS -->
- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
- <script>
-     // Function to toggle pain fields
-     function togglePainFields() {
-        const painScaleInput = document.getElementById("pain_scale");
-        const locationField = document.getElementById("location_field");
-        const durationField = document.getElementById("duration_field");
-        // Check if the Pain Scale value is 0
-        if (painScaleInput.value === "0") {
-            locationField.style.display = "none"; // Hide Location of Pain
-            durationField.style.display = "none"; // Hide Pain Duration
-        } else {
-            locationField.style.display = "block"; // Show Location of Pain
-            durationField.style.display = "block"; // Show Pain Duration
-        }
-    }
-    // Initialize the visibility of pain fields on page load
-    window.onload = function () {
-        togglePainFields(); // Initialize pain fields visibility
-    };
-    function validatePainScale() {
-        const painScaleInput = document.getElementById("pain_scale");
-        // Ensure the value stays within the allowed range
-        if (painScaleInput.value > 10) {
-            painScaleInput.value = 10;
-        } else if (painScaleInput.value < 0) {
-            painScaleInput.value = 0;
-        }
-    }
- ;
- </script>
-<script>
-    async function handleFeedback(event) {
-        event.preventDefault(); // Prevent form submission
-        const decision = document.getElementById("feedback_decision").value;
-        const feedbackText = document.getElementById("feedback_text").value;
-        // Prepare feedback data
-        const feedbackData = {
-            decision: decision,
-            feedback_text: feedbackText || "No additional feedback provided",
-            timestamp: new Date().toISOString(),
-        };
-        // Send feedback to the server (JSON file)
-        try {
-            await fetch("/save-feedback", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(feedbackData),
-            });
-            // Show pop-up notification
-            const popup = document.getElementById("popupNotification");
-            popup.style.display = "block";
-            setTimeout(() => {
-                popup.style.display = "none";
-            }, 3000);
-            // Reset the form
-            document.getElementById("feedbackForm").reset();
-        } catch (error) {
-            console.error("Error saving feedback:", error);
-        }
-    }
-</script>
-    <style>
-        body {
-            background-color: #02051b; /* Blue Charcoal */
-            font-size: 12px;
-            color: white;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #1a1f36;
-            border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.4);
-        }
-        h1, h2 {
-            color: #00d4ff; /* Accent Light Blue */
-        }
-        input, select, textarea {
-            background-color: #2d344a;
-            color: white;
-            border: 1px solid #4b556d;
-        }
-        input:focus, select:focus, textarea:focus {
-            background-color: #3a4157;
-            border-color: #00d4ff;
-            outline: none;
-        }
-        .btn-primary {
-            background-color: #00d4ff;
-            border: none;
-        }
-        .btn-primary:hover {
-            background-color: #008bbd;
-        }
-        .button {
-            padding: 10px 20px;
-            background-color: #00d4ff;
-            color: #02051b;
-            border: none;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-        .button.active {
-            background-color: red;
-        }
-        #temp_buttons {
-            display: none;
-            margin-top: 15px;
-        }
-        .greeting-section {
-        background-color: #02051b; /* Blue Charcoal */
-        color: white;
-        padding: 20px;
-        font-family: 'Arial', sans-serif;
-        border-bottom: 1px solid #3a4157; /* Subtle divider */
-    }
-    .greeting-section p {
-        margin: 0;
-        font-size: 1.5rem; /* Slightly smaller greeting text */
-        color: #a8b1c0; /* Subtle light gray text */
-    }
-    .greeting-section h1 {
-        margin: 0;
-        font-size: 2.5rem; /* Bold and prominent text */
-        font-weight: bold;
-        color: #ffffff; /* Bright white */
-    }
-    .custom-button {
-        background-color: #3b82f6; /* Blue background */
-        color: white; /* White text */
-        border: none; /* No border */
-        padding: 10px 20px; /* Padding for size */
-        border-radius: 20px; /* Rounded edges */
-        font-size: 16px; /* Font size */
-        font-weight: bold; /* Bold text */
-        text-align: center; /* Center text */
-        cursor: pointer; /* Pointer cursor on hover */
-        transition: background-color 0.3s ease; /* Smooth hover effect */
-    }
-    .custom-button:hover {
-        background-color: #2563eb; /* Darker blue on hover */
-    }
-    .custom-button:focus {
-        outline: none; /* Remove outline on focus */
-    }
-    /* Container for the categories */
-    .category-container {
-        display: flex;
-        justify-content: space-around; /* Space between items */
-        align-items: center; /* Align items vertically */
-        padding: 20px 0;
-    }
-    /* Individual items */
-    .category-item {
-        text-align: center;
-        cursor: pointer;
-    }
-    /* Emoji styling */
-    .category-item .emoji {
-        font-size: 2rem; /* Emoji size */
-        margin-bottom: 5px; /* Spacing below emoji */
-    }
-    /* Text styling */
-    .category-item h3 {
-        font-size: 1rem; /* Text size */
-        font-weight: bold; /* Bold text */
-        color: #a8a8a8; /* Gray text color */
-        border-bottom: 2px solid #a8a8a8; /* Gray underline */
-        display: inline-block;
-        padding-bottom: 3px;
-        margin: 0;
-        transition: color 0.3s ease, border-color 0.3s ease;
-    }
-    /* Hover effect */
-    .category-item:hover h3 {
-        color: #ffffff; /* White text on hover */
-        border-color: #ffffff; /* White underline on hover */
-    }
-    .table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0 10px; /* Add spacing between rows */
-        background-color: #0d0d38;
-    }
-    .table th {
-        font-size: 1rem;
-        text-transform: uppercase;
-        font-weight: bold;
-    }
-    .table td {
-        font-size: 1rem;
-        background-color: #0d0d38;
-    }
-    .table tbody tr {
-        border-radius: 10px;
-    }
+  <!-- Bootstrap + Flowbite -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
 
+  <!-- Plotly -->
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 
-    .box {
-            width: 200px;
-            height: 150px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            background-color: rgba(255, 255, 255, 0);
-            padding: 20px;
-        }
+  <!-- Three.js + 3d-force-graph (three أولاً) -->
+  <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/3d-force-graph"></script>
 
-        .emoji {
-            font-size: 40px;
-        }
+  <style>
+    :root{
+      --glass: rgba(13, 13, 56, 0.55);
+      --glass-strong: rgba(9,14,57,0.75);
+      --border: 1px solid rgba(255,255,255,0.08);
+      --shadow: 0 10px 30px rgba(0,0,0,.45);
+    }
+    body{ background:#02051b; font-size:12px; color:#fff; }
+    .container{
+      max-width:1200px; margin:20px auto; padding:20px;
+      background:var(--glass); border-radius:16px; box-shadow:var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+    h1,h2{ color:#00d4ff; }
 
-        .grey-text {
-            color: grey;
-        }
+    input, select, textarea{
+      background:#111633; color:#fff; border:var(--border);
+      border-radius:12px;
+    }
+    input:focus, select:focus, textarea:focus{ background:#151c44; border-color:#00d4ff; outline:none; }
+    .form-text{ color:#9fb6ff !important; }
 
-        .bold-number {
-            color: white;
-            font-weight: bold;
-            font-size: 32px;
-        }
+    .btn-primary{ background:#00d4ff; border:none; border-radius:14px; }
+    .btn-primary:hover{ background:#06b0d8; }
+    .btn-outline-info, .btn-outline-light{ border-radius:20px; }
 
-        .box span {
-            display: block;
-            margin: 5px 0;
-        }
+    .custom-button{
+      background:#3b82f6; color:#fff; border:none; padding:10px 20px;
+      border-radius:20px; font-size:16px; font-weight:bold; cursor:pointer; transition:.3s;
+    }
+    .custom-button:hover{ background:#2563eb; }
 
+    .table{ width:100%; border-collapse:separate; border-spacing:0 10px; background:transparent; }
+    .table td{ background:transparent; }
+    .list-group-item{ background:transparent; border:none; }
 
-        .div-box {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 0;
-        }
-    </style>
+    .box{
+      width:200px; height:150px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+      text-align:center; background:var(--glass-strong); padding:20px; border-radius:16px; border:var(--border);
+    }
+    .emoji{ font-size:40px; } .grey-text{ color:#9fb6ff; } .bold-number{ color:#fff; font-weight:800; font-size:28px; }
+    .div-box{ display:flex; justify-content:space-between; align-items:center; margin:0; flex-wrap:wrap; gap:12px; }
+
+    .stats-grid{ display:grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap:12px; }
+    .stat-card{ background:var(--glass-strong); border-radius:12px; padding:14px; border:var(--border); }
+    .stat-title{ color:#a8b1c0; font-size:.9rem; margin:0; }
+    .stat-value{ font-size:1.8rem; font-weight:800; margin-top:4px; }
+    .stat-sub{ color:#a8b1c0; font-size:.8rem; margin-top:2px; }
+
+    .interp-and-radar{ display:flex; gap:20px; flex-wrap:wrap; }
+    .interp-and-radar>.col-half{ flex:1 1 480px; min-width:0; }
+
+    #radarInteractive{ width:100%; height: clamp(320px, 50vh, 620px); background:#090e39; border-radius:12px; border:var(--border); }
+    .radar-fallback img{ width:100%; max-width:560px; aspect-ratio:1/1; object-fit:contain; }
+
+    #graph3d{ width:100%; height: clamp(360px, 58vh, 720px); border-radius:12px; background:#0d0d38; position:relative; border:var(--border); }
+    .graph-toolbar{ display:flex; gap:8px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+    .toolbar-right{ display:flex; gap:8px; }
+
+    /* Coverage chips */
+    .chip{ display:inline-block; padding:6px 10px; border-radius:999px; font-weight:700; font-size:.78rem; border:1px solid transparent; }
+    .chip-decisive{ background:#142a52; color:#9ed0ff; border-color:#1d4ed8; }
+    .chip-considered{ background:#3a2a0c; color:#ffd26a; border-color:#a67a1a; }
+    .chip-miss{ background:#3b1a1a; color:#ffb4b4; border-color:#ef4444; }
+
+    /* Vitals pills */
+    .pill{ display:inline-block; padding:2px 8px; border-radius:999px; font-weight:700; font-size:.7rem; margin-left:6px; border:1px solid transparent; }
+    .pill-normal{ background:#11341b; color:#7ee08f; border-color:#1f6f33; }
+    .pill-abnormal{ background:#3a2a0c; color:#ffd26a; border-color:#a67a1a; }
+    .pill-out{ background:#3b1a1a; color:#ffb4b4; border-color:#ef4444; }
+    .pill-miss{ background:#2f2f55; color:#c7ccff; border-color:#5960d6; }
+
+    /* Accepted / Rejected cards */
+    .kpi-card{
+      background:var(--glass-strong); border:var(--border); border-radius:16px; padding:16px; box-shadow:var(--shadow);
+    }
+    .kpi-title{ color:#b8c7ff; font-weight:700; }
+    .kpi-line{ font-size:1.4rem; font-weight:800; }
+    .kpi-sub{ color:#8aa0ff; font-size:.85rem; }
+
+    .is-oob{ border-color:#ef4444 !important; }
+    .hint{ font-size:.75rem; color:#ffb4b4; display:none; }
+    .hint.show{ display:block; }
+  </style>
 </head>
 <body>
-    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
-   
 
-    
-    <nav class="bg-[#03051b] shadow-md w-full">
-        <div class="bg-[#03051b] shadow-md w-full">
-            <!-- Logo -->
-             
-    <div class="container mt-4" style="backdrop-filter: blur(10px); border-radius: 10px; padding: 20px 30px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2); background: none;">
-        <div style="flex: 1; text-align: center;">
-            <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Triage<span class="bg-blue-100 text-blue-800 text-2xl font-semibold me-2 px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800 ms-2">PRO</span></span>
-        </div></div>
-            
-            <!-- Navigation Links -->
-          
-        </div>
-    </nav>
-    
+  <!-- Top / Logo -->
+  <nav class="bg-[#03051b] shadow-md w-100">
+    <div class="container" style="background:none; box-shadow:none;">
+      <div style="text-align:center;">
+        <span class="text-2xl fw-semibold">Triage
+          <span class="bg-blue-100 text-blue-800 text-2xl fw-semibold ms-2 px-2.5 py-0.5 rounded">PRO</span>
+        </span>
+      </div>
+    </div>
+  </nav>
 
-    <div class="container mt-4" style="backdrop-filter: blur(10px); border-radius: 10px; padding: 20px 30px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2); background: none;">
-        <div style="flex: 1; text-align: left;">
-            <h1 class="mb-4 text-3xl font-extrabold text-white-200 dark:text-white md:text-5xl lg:text-6xl"><span class="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">Clinical Decision Supporter</span> Triage AI.</h1>
-    <p class="text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400">Streamline clinical decision-making with our rule-based and machine learning-powered triage system. Designed for nurses and physicians, this tool helps save time by evaluating hospitalization needs through a hospital database, ensuring accurate and timely care recommendations...</p>
-    
-    <br><br>
-    
-          
-    <div class="container mt-4" style="backdrop-filter: blur(10px); border-radius: 10px; padding: 20px 30px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2); background: none;">
-        <div style="flex: 1; text-align: center;">
-      
+  <!-- Hero -->
+  <div class="container" style="background:none; box-shadow:none;">
+    <div style="text-align:left;">
+      <h1 class="mb-4 text-3xl fw-bold text-white md:text-5xl lg:text-6xl">
+        <span class="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">Clinical Decision Supporter</span> Triage AI.
+      </h1>
+      <p class="text-lg text-gray-400">
+        Streamline clinical decision-making with our rule-based and machine learning-powered triage system.
+      </p>
+    </div>
 
-<div class="div-box">
-
-    <div class="box">
+    <!-- Identity preserved cards -->
+    <div class="div-box">
+      <div class="box">
         <div class="emoji">📜</div>
         <span class="grey-text">Rules Count</span>
-        <span class="bold-number">107+</span>
+        <span class="bold-number" id="rules_defined_total">107+</span>
         <span class="grey-text">Last Update: 2025/01/25</span>
-    </div>
-    
-    <div class="box">
+      </div>
+      <div class="box">
         <div class="emoji">🔢</div>
         <span class="grey-text">Variables</span>
-        <span class="bold-number">♾️</span>
+        <span class="bold-number" id="vars_count">♾️</span>
         <span class="grey-text">Last Update: 2025/01/25</span>
-    </div>
-    
-    <div class="box">
+      </div>
+      <div class="box">
         <div class="emoji">✅</div>
         <span class="grey-text">Accepted Requests</span>
-        <span class="bold-number" style="color: rgb(237, 159, 219);">....BETA</span>
+        <span class="bold-number" id="analytics_accept_card" style="color:#ed9fdb;">....BETA</span>
         <span class="grey-text">Accepted</span>
-    </div>
-    
-    <div class="box">
+      </div>
+      <div class="box">
         <div class="emoji">🔌</div>
         <span class="grey-text">API</span>
-        <span class="bold-number" style="color: rgb(159, 237, 159);">Ready</span>
+        <span class="bold-number" style="color:#9fed9f;">Ready</span>
         <span class="grey-text">Integration</span>
+      </div>
     </div>
-    
+  </div>
+
+  <!-- Safety errors -->
+  {% if form_error %}
+  <div class="container" style="background:#3b1a1a;border:1px solid #ef4444;color:#ffb4b4;">
+    <strong>Input out of safe range:</strong> {{ form_error }}
+  </div>
+  {% endif %}
+
+  <!-- Steps -->
+  <div class="container" style="background:#0d0d38;">
+    <ol class="d-flex gap-2 text-sm">
+      <li class="text-[#00d4ff]">Enter Data</li>
+      <li class="text-success">→ Predict with Confidence!</li>
+    </ol>
+    <h1 class="mb-2 text-4xl fw-bold text-white">AI-Powered
+      <span class="text-primary">Triage Module
+        <span class="bg-blue-100 text-blue-800 text-2xl fw-semibold ms-2 px-2.5 py-0.5 rounded">PRO</span>
+      </span>.
+    </h1>
+    <p class="text-lg text-gray-400 mb-0">Rule-based + ML hybrid triage.</p>
+  </div>
+
+  <!-- Form -->
+  <form action="/process" method="post" class="mt-4">
+    <!-- Vital Signs -->
+    <div class="container text-center" style="background:#090e39;">
+      <div class="d-flex justify-content-between align-items-center">
+        <h2 class="text-start" style="font-size: 18px;">📋 Vital Signs</h2>
+        <div class="d-flex gap-2">
+          <button type="button" id="btnSuggestMid"  class="btn btn-sm btn-outline-info">Suggest mid-safe</button>
+          <button type="button" id="btnSuggestRand" class="btn btn-sm btn-outline-light">Suggest random-safe</button>
+        </div>
+      </div>
+      <div class="row g-3">
+        <!-- نسمح بالكتابة الحرّة: بدون required/min/max؛ نعرض Hint فقط -->
+        <div class="col">
+          <label class="form-label">SP:</label>
+          <input type="number" name="systolic" class="form-control" placeholder="60–260">
+          <div class="hint">Out of safe range (60–260) — will be marked.</div>
+        </div>
+        <div class="col">
+          <label class="form-label">DP:</label>
+          <input type="number" name="diastolic" class="form-control" placeholder="30–160">
+          <div class="hint">Out of safe range (30–160) — will be marked.</div>
+        </div>
+        <div class="col">
+          <label class="form-label">Temp (°C):</label>
+          <input type="number" name="temp" id="temp" class="form-control" step="0.1" placeholder="30.0–43.0">
+          <div class="hint">Out of safe range (30.0–43.0) — will be marked.</div>
+        </div>
+        <div class="col">
+          <label class="form-label">Pulse:</label>
+          <input type="number" name="hr" class="form-control" placeholder="30–220">
+          <div class="hint">Out of safe range (30–220) — will be marked.</div>
+        </div>
+        <div class="col">
+          <label class="form-label">RBS:</label>
+          <input type="number" name="blood_glucose" id="blood_glucose" class="form-control" step="1" placeholder="20–600">
+          <div class="hint">Out of safe range (20–600) — will be marked.</div>
+        </div>
+        <div class="col">
+          <label class="form-label">O<sub>2</sub> (%):</label>
+          <input type="number" name="o2_sat" class="form-control" placeholder="50–100">
+          <div class="hint">Out of safe range (50–100) — will be marked.</div>
+        </div>
+        <div class="col">
+          <label class="form-label">RR:</label>
+          <input type="number" name="rr" class="form-control" placeholder="6–60">
+          <div class="hint">Out of safe range (6–35) — will be marked.</div>
+        </div>
+        <div class="col">
+          <label class="form-label">GCS:</label>
+          <input type="number" name="gcs" class="form-control" placeholder="3–15">
+          <div class="hint">Out of safe range (3–15) — will be marked.</div>
+        </div>
+      </div>
     </div>
 
-</div></div>
-            
+    <!-- Pain -->
+    <div class="container text-center" style="background:#090e39;">
+      <h2 class="text-start" style="font-size: 18px;">🤕 Pain Assessment</h2>
+      <div class="row g-3 align-items-center">
+        <div class="col-md-4">
+          <label for="pain_scale" class="form-label">Pain Scale (0-10):</label>
+          <input value="" type="number" name="pain_scale" id="pain_scale" class="form-control"
+                 min="0" max="10" step="1" oninput="validatePainScale(); togglePainFields()"
+                 placeholder="0–10">
+        </div>
+        <div class="col-md-4" id="location_field">
+          <label class="form-label">Location of Pain:</label>
+          <select id="location_of_pain" name="location_of_pain" class="form-select">
+            <option value="">—</option><option value="Central">Central</option><option value="Peripheral">Peripheral</option>
+          </select>
+        </div>
+        <div class="col-md-4" id="duration_field">
+          <label class="form-label">Pain Duration:</label>
+          <select id="pain_duration" name="pain_duration" class="form-select">
+            <option value="">—</option><option value="Acute">Acute</option><option value="Chronic">Chronic</option>
+          </select>
+        </div>
+      </div>
+    </div>
 
+    <!-- Modifiers -->
+    <div class="container text-center" style="background:#090e39;">
+      <h2 class="text-start" style="font-size: 18px;">⚙️ Modifiers</h2>
+      <div class="row g-3 align-items-center">
+        <div class="col-md-4">
+          <label for="symptoms_present">Blood Pressure Associated Symptoms</label>
+          <select id="symptoms_present" name="symptoms_present" class="form-select">
+            <option value="">—</option>
+            <option value="no">No</option>
+            <option value="yes">headache/nausea/sob/chestpain</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="distress_level" class="form-label">Distress Level:</label>
+          <select id="distress_level" name="distress_level" class="form-select">
+            <option value="">—</option><option value="Severe">Severe</option>
+            <option value="Moderate">Moderate</option><option value="Mild">Mild</option><option value="None">None</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="blood_glucose_symptoms" class="form-label">Blood Glucose Symptoms:</label>
+          <select id="blood_glucose_symptoms" name="blood_glucose_symptoms" class="form-select">
+            <option value="">—</option><option value="Confusion">Confusion</option>
+            <option value="Diaphoresis">Diaphoresis</option><option value="Behavioural Change">Behavioural Change</option>
+            <option value="Seizure">Seizure</option><option value="Acute Focal Deficits">Acute Focal Deficits</option>
+            <option value="Dyspnea">Dyspnea</option><option value="Dehydration">Dehydration</option>
+            <option value="Tachypnea">Tachypnea</option><option value="Thirst">Thirst</option>
+            <option value="Polyuria">Polyuria</option><option value="Weakness">Weakness</option>
+          </select>
+        </div>
+      </div>
+    </div>
 
+    <!-- Patient Info -->
+    <div class="container text-center" style="background:#090e39;">
+      <h2 class="text-start" style="font-size: 18px;">🧑‍⚕️ Patient Information</h2>
+      <div class="row g-3">
+        <div class="col"><label class="form-label">Chief Complaint:</label><textarea name="chief_complaint" class="form-control" placeholder="optional"></textarea></div>
+        <div class="col"><label class="form-label">History:</label><textarea name="history" class="form-control" placeholder="optional"></textarea></div>
+      </div>
+    </div>
 
+    <!-- Submit -->
+    <div class="d-flex justify-content-center">
+      <button type="submit" class="custom-button">Predict CTAS Level</button>
+    </div>
+  </form>
 
+  {% if ctas_level %}
 
-
-
-
-
-
-
-
-
-
-
-
-
-<ol class="flex items-center w-full text-sm font-medium text-center sm:text-base">
-    <!-- Step 1: Enter Data -->
-    <li class="flex md:w-full items-center text-[#00d4ff] sm:after:content-[''] after:w-full after:h-1 after:border-b after:border-gray-200 after:border-1 after:hidden sm:after:inline-block after:mx-6 xl:after:mx-10 dark:after:border-gray-700">
-        <span class="flex items-center after:content-['/'] sm:after:hidden after:mx-2 after:text-gray-200 dark:after:text-gray-500">
-            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 me-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z"/>
-            </svg>
-            Enter <span class="hidden sm:inline-flex sm:ms-2">Data</span>
-        </span>
-    </li>
-
-    <!-- Step 2: Predict with Confidence -->
-    <li class="flex md:w-full items-center text-green-500">
-        <span class="flex items-center after:content-[''] sm:after:hidden after:mx-2 after:text-gray-200 dark:after:text-gray-500">
-            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 me-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z"/>
-            </svg>
-            Predict with Confidence!
-        </span>
-    </li>
-</ol>
-
-
-<h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight text-white-900 md:text-5xl lg:text-6xl dark:text-blue">AI-Powered <span class="text-blue-600 dark:text-blue-500">Triage Module<span class="bg-blue-100 text-blue-800 text-2xl font-semibold me-2 px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800 ms-2">PRO</span></span>.</h1>
-<p class="text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400">Efficiently determining triage levels using a rule-based approach for accurate and timely decision-making..</p>
-
-
-</div>
-</div>
-
-
-
-
-  
-
-
- 
-
-
-
-
-
-        <form action="/process" method="post" class="mt-4">
-            <!-- Vital Signs -->
-            <div class="container text-center" style="background: #090e39; backdrop-filter: blur(10px); border-radius: 10px; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);">
-                <h2 class="text-start" style="font-size: 18px;">📋 Vital Signs</h2>
-                <div class="row row-cols-20">
-                    <div class="col">
-                    <label for="systolic" class="form-label">SP:</label>
-                    <input type="number" name="systolic" class="form-control" required>
-                    </div>
-                    <div class="col">
-                        <label for="diastolic" class="form-label">DP:</label>
-                        <input type="number" name="diastolic" class="form-control" required>
-                    </div>
-                    <div class="col">
-                        <label for="temp" class="form-label">Temp (°C):</label>
-                        <input type="number" name="temp" id="temp" class="form-control" step="0.1" min="35.0" max="42.0" required>
-                    </div>
-                    <div class="col">
-                        <label for="hr" class="form-label">Pulse:</label>
-                        <input type="number" name="hr" class="form-control" required>
-                    </div>
-                    <div class="col">
-                    <label for="blood_glucose" class="form-label">RBS:</label>
-                    <input type="number" name="blood_glucose" id="blood_glucose" class="form-control" step="1" required>
-                </div>
-                    <div class="col">
-                        <label for="o2_sat" class="form-label">O<sub>2</sub> (%):</label>
-                        <input type="number" name="o2_sat" class="form-control" required>
-                    </div>
-                    <div class="col">
-                        <label for="rr" class="form-label">RR:</label>
-                        <input type="number" name="rr" class="form-control" required>
-                    </div>
-                    <div class="col">
-                        <label for="gcs" class="form-label">GCS:</label>
-                        <input type="number" name="gcs" class="form-control" required>
-                    </div>
-                 </div>
-                     </div>
-                     <div class="container text-center" style="background: #090e39; backdrop-filter: blur(10px); border-radius: 10px; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);">
-                        <h2 class="text-start" style="font-size: 18px;">🤕 Pain Assessment</h2>
-                        <div class="row g-3 align-items-center">
-                            <!-- Pain Scale Input -->
-                            <div class="col-md-4">
-                                <label for="pain_scale" class="form-label">Pain Scale (0-10):</label>
-                                <input
-                                    value="0"
-                                    type="number"
-                                    name="pain_scale"
-                                    id="pain_scale"
-                                    class="form-control"
-                                    min="0"
-                                    max="10"
-                                    step="1"
-                                    required
-                                    oninput="validatePainScale(); togglePainFields()"
-                                    >
-                            </div>
-                            <!-- Location of Pain Dropdown -->
-                            <div class="col-md-4" id="location_field">
-                                <label for="location_of_pain" class="form-label">Location of Pain:</label>
-                                <select id="location_of_pain" name="location_of_pain" class="form-select" required>
-                                    <option value="#">#</option>
-                                    <option value="Central">Central</option>
-                                    <option value="Peripheral">Peripheral</option>
-                                </select>
-                            </div>
-                            <!-- Pain Duration Dropdown -->
-                            <div class="col-md-4" id="duration_field">
-                                <label for="pain_duration" class="form-label">Pain Duration:</label>
-                                <select id="pain_duration" name="pain_duration" class="form-select" required>
-                                    <option value="#">#</option>
-                                    <option value="Acute">Acute</option>
-                                    <option value="Chronic">Chronic</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="container text-center" style="background: #090e39; backdrop-filter: blur(10px); border-radius: 10px; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);">
-                        <h2 class="text-start" style="font-size: 18px;">⚙️ Modifiers</h2>
-                        <div class="row g-3 align-items-center">
-                            <!-- Location of Pain Dropdown -->
-                            <div class="col-md-4" id="location_field">
-                                <label for="symptoms_present">Blood Pressure Associated Symptoms</label>
-                                <select id="symptoms_present" name="symptoms_present" class="form-select" required>
-                                    <option value="no">No</option>
-                                    <option value="yes">headache/nausea/sob/chestpain</option>
-                                    </select>
-                            </div>
-                            <div class="col-md-4" id="duration_field">
-                                <label for="distress_level" class="form-label">Distress Level:</label>
-                                <select id="distress_level" name="distress_level" class="form-select" required>
-                                    <option value="None">None</option>
-                                    <option value="Severe">Severe</option>
-                                    <option value="Moderate">Moderate</option>
-                                    <option value="Mild">Mild</option>
-                                </select>                  
-                            </div>
-                            <div class="col-md-4" id="duration_field">
-                                <label for="blood_glucose_symptoms" class="form-label">Blood Glucose Symptoms:</label>
-                                <select id="blood_glucose_symptoms" name="blood_glucose_symptoms" class="form-select" required>
-                                    <option value="None">None</option>
-                                    <option value="Confusion">Confusion</option>
-                                    <option value="Diaphoresis">Diaphoresis</option>
-                                    <option value="Behavioural Change">Behavioural Change</option>
-                                    <option value="Seizure">Seizure</option>
-                                    <option value="Acute Focal Deficits">Acute Focal Deficits</option>
-                                    <option value="Dyspnea">Dyspnea</option>
-                                    <option value="Dehydration">Dehydration</option>
-                                    <option value="Tachypnea">Tachypnea</option>
-                                    <option value="Thirst">Thirst</option>
-                                    <option value="Polyuria">Polyuria</option>
-                                    <option value="Weakness">Weakness</option>
-                                    <option value="None">None</option>
-                                </select>   
-                            </div>
-                        </div>
-                    </div>
-                     <div class="container text-center" style="background: #090e39; backdrop-filter: blur(10px); border-radius: 10px; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);">
-                        <h2 class="text-start" style="font-size: 18px;">🧑‍⚕️ Patient Information</h2>
-                        <div class="row row-cols-20">
-                            <div class="col">
-                                <label for="chief_complaint" class="form-label">Chief Complaint:</label>
-                                <textarea name="chief_complaint" class="form-control" required></textarea>
-                            </div>
-                            <div class="col">
-                                <label for="history" class="form-label">History:</label>
-                                <textarea name="history" class="form-control" required></textarea>
-                            </div>
-    </div>    
-           </div>
-            <!-- Submit Button -->
-            <div class="d-flex justify-content-center">
-                <button type="submit" class="custom-button">Predict CTAS Level</button>
-            </div>
-        </form>
-        {% if ctas_level %}
-      <!-- Input Summary Section -->
-<div class="container mt-5" style="background-color: #0d0d38; padding: 20px; border-radius: 10px;">
-    <h2 class="text-start" style="color: #00d4ff;">Input Summary</h2>
+  <!-- Input Summary -->
+  <div class="container mt-5" style="background:#0d0d38;">
+    <h2 class="text-start">Input Summary</h2>
     <div class="row g-4">
-        <!-- Vital Signs -->
-        <div class="col-md-6">
-            <p><strong>📋 Vital Signs</strong></p>
-            <ul style="list-style: none; padding-left: 0; color: #a8b1c0;">
-                <li>Systolic: <span style="color: white;">{{ systolic }}</span></li>
-                <li>Diastolic: <span style="color: white;">{{ diastolic }}</span></li>
-                <li>Temperature: <span style="color: white;">{{ temp }} °C</span></li>
-                <li>Pulse: <span style="color: white;">{{ hr }}</span></li>
-                <li>Respiratory Rate: <span style="color: white;">{{ rr }}</span></li>
-                <li>Oxygen Saturation: <span style="color: white;">{{ o2_sat }}%</span></li>
-                <li>Blood Glucose: <span style="color: white;">{{ blood_glucose }}</span></li>
-                <li>GCS: <span style="color: white;">{{ gcs }}</span></li>
-            </ul>
-        </div>
-        <!-- Pain Assessment -->
-        <div class="col-md-6">
-            <p><strong>🤕 Pain Assessment</strong></p>
-            <ul style="list-style: none; padding-left: 0; color: #a8b1c0;">
-                <li>Pain Scale: <span style="color: white;">{{ pain_scale }}</span></li>
-                <li>Location of Pain: <span style="color: white;">{{ location_of_pain }}</span></li>
-                <li>Pain Duration: <span style="color: white;">{{ pain_duration }}</span></li>
-            </ul>
-        </div>
-        <!-- Modifiers -->
-        <div class="col-md-6">
-            <p><strong>⚙️ Modifiers</strong></p>
-            <ul style="list-style: none; padding-left: 0; color: #a8b1c0;">
-                <li>Blood Pressure Symptoms: <span style="color: white;">{{ symptoms_present }}</span></li>
-                <li>Distress Level: <span style="color: white;">{{ distress_level }}</span></li>
-                <li>Blood Glucose Symptoms: <span style="color: white;">{{ blood_glucose_symptoms }}</span></li>
-            </ul>
-        </div>
-        <!-- Patient Information -->
-        <div class="col-md-6">
-            <p><strong>🧑‍⚕️ Patient Information</strong></p>
-            <ul style="list-style: none; padding-left: 0; color: #a8b1c0;">
-                <li>Chief Complaint: <span style="color: white;">{{ chief_complaint }}</span></li>
-                <li>History: <span style="color: white;">{{ history }}</span></li>
-            </ul>
-        </div>
+      <div class="col-md-6">
+        <p><strong>📋 Vital Signs</strong></p>
+        <ul class="list-unstyled" style="color:#a8b1c0;">
+          <li>Systolic:
+            <span class="text-white">{{ systolic }}</span>
+            {% set s = vital_classes.get('Systolic','') %}
+            <span class="pill {{ 'pill-normal' if s=='Normal' else 'pill-abnormal' if s=='Abnormal' else 'pill-out' if s=='OutOfRange' else 'pill-miss' }}">{{ s }}</span>
+          </li>
+          <li>Diastolic:
+            <span class="text-white">{{ diastolic }}</span>
+            {% set s = vital_classes.get('Diastolic','') %}
+            <span class="pill {{ 'pill-normal' if s=='Normal' else 'pill-abnormal' if s=='Abnormal' else 'pill-out' if s=='OutOfRange' else 'pill-miss' }}">{{ s }}</span>
+          </li>
+          <li>Temperature:
+            <span class="text-white">{{ temp }} °C</span>
+            {% set s = vital_classes.get('TEMPERATURE','') %}
+            <span class="pill {{ 'pill-normal' if s=='Normal' else 'pill-abnormal' if s=='Abnormal' else 'pill-out' if s=='OutOfRange' else 'pill-miss' }}">{{ s }}</span>
+          </li>
+          <li>Pulse:
+            <span class="text-white">{{ hr }}</span>
+            {% set s = vital_classes.get('hr','') %}
+            <span class="pill {{ 'pill-normal' if s=='Normal' else 'pill-abnormal' if s=='Abnormal' else 'pill-out' if s=='OutOfRange' else 'pill-miss' }}">{{ s }}</span>
+          </li>
+          <li>Respiratory Rate:
+            <span class="text-white">{{ rr }}</span>
+            {% set s = vital_classes.get('RR','') %}
+            <span class="pill {{ 'pill-normal' if s=='Normal' else 'pill-abnormal' if s=='Abnormal' else 'pill-out' if s=='OutOfRange' else 'pill-miss' }}">{{ s }}</span>
+          </li>
+          <li>Oxygen Saturation:
+            <span class="text-white">{{ o2_sat }}%</span>
+            {% set s = vital_classes.get('O2_Sat','') %}
+            <span class="pill {{ 'pill-normal' if s=='Normal' else 'pill-abnormal' if s=='Abnormal' else 'pill-out' if s=='OutOfRange' else 'pill-miss' }}">{{ s }}</span>
+          </li>
+          <li>Blood Glucose:
+            <span class="text-white">{{ blood_glucose }}</span>
+            {% set s = vital_classes.get('blood_glucose','') %}
+            <span class="pill {{ 'pill-normal' if s=='Normal' else 'pill-abnormal' if s=='Abnormal' else 'pill-out' if s=='OutOfRange' else 'pill-miss' }}">{{ s }}</span>
+          </li>
+          <li>GCS:
+            <span class="text-white">{{ gcs }}</span>
+            {% set s = vital_classes.get('GCS','') %}
+            <span class="pill {{ 'pill-normal' if s=='Normal' else 'pill-abnormal' if s=='Abnormal' else 'pill-out' if s=='OutOfRange' else 'pill-miss' }}">{{ s }}</span>
+          </li>
+        </ul>
+      </div>
+      <div class="col-md-6">
+        <p><strong>🤕 Pain Assessment</strong></p>
+        <ul class="list-unstyled" style="color:#a8b1c0;">
+          <li>Pain Scale:
+            <span class="text-white">{{ pain_scale }}</span>
+            {% set s = vital_classes.get('Pain_Scale','') %}
+            <span class="pill {{ 'pill-normal' if s=='Normal' else 'pill-abnormal' if s=='Abnormal' else 'pill-out' if s=='OutOfRange' else 'pill-miss' }}">{{ s }}</span>
+          </li>
+          <li>Location of Pain: <span class="text-white">{{ location_of_pain }}</span></li>
+          <li>Pain Duration: <span class="text-white">{{ pain_duration }}</span></li>
+        </ul>
+      </div>
+      <div class="col-md-6">
+        <p><strong>⚙️ Modifiers</strong></p>
+        <ul class="list-unstyled" style="color:#a8b1c0;">
+          <li>Blood Pressure Symptoms: <span class="text-white">{{ symptoms_present }}</span></li>
+          <li>Distress Level: <span class="text-white">{{ distress_level }}</span></li>
+          <li>Blood Glucose Symptoms: <span class="text-white">{{ blood_glucose_symptoms }}</span></li>
+        </ul>
+      </div>
+      <div class="col-md-6">
+        <p><strong>🧑‍⚕️ Patient Information</strong></p>
+        <ul class="list-unstyled" style="color:#a8b1c0;">
+          <li>Chief Complaint: <span class="text-white">{{ chief_complaint }}</span></li>
+          <li>History: <span class="text-white">{{ history }}</span></li>
+        </ul>
+      </div>
     </div>
-</div>
-<!-- Spacer Section -->
-<!-- Recommended CTAS Section -->
-<div class="container mt-5 d-flex justify-content-center align-items-center" 
-     style="background-color: #0d0d38; padding: 20px; border-radius: 10px; height: 400px;">
-    <!-- Row for CTAS Number and Gauge Chart -->
+  </div>
+
+  <!-- CTAS big number -->
+  <div class="container mt-5 d-flex justify-content-center align-items-center" style="background:#0d0d38; height:320px;">
     <div class="row text-center w-100 align-items-center">
-        <!-- CTAS Level Text -->
-        <div class="col-md-6">
-            <h1 class="text-white" style="font-size: 12rem; font-weight: bold;">{{ ctas_level }}</h1>
+      <div class="col-12">
+        <h1 class="text-white" style="font-size: 10rem; font-weight: bold;">{{ ctas_level }}</h1>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mega Stats Grid -->
+  <div class="container mt-4" style="background:#0d0d38;">
+    <div class="stats-grid">
+      <div class="stat-card"><p class="stat-title">Rules matched (this case)</p>
+        <div class="stat-value" id="matched_rules_now">0</div><div class="stat-sub">from rules.py</div></div>
+      <div class="stat-card"><p class="stat-title">Variables provided</p>
+        <div class="stat-value" id="vars_now">0</div><div class="stat-sub">∞ combinations</div></div>
+      <div class="stat-card"><p class="stat-title">Accepted</p>
+        <div class="stat-value" id="analytics_accept">—</div><div class="stat-sub">feedback.json</div></div>
+      <div class="stat-card"><p class="stat-title">Refused</p>
+        <div class="stat-value" id="analytics_decline">—</div><div class="stat-sub">feedback.json</div></div>
+      <div class="stat-card"><p class="stat-title">Samples</p>
+        <div class="stat-value" id="analytics_samples">—</div><div class="stat-sub">records.json</div></div>
+      <div class="stat-card"><p class="stat-title">Feedbacks</p>
+        <div class="stat-value" id="analytics_feedback">—</div><div class="stat-sub">feedback.json</div></div>
+      <div class="stat-card"><p class="stat-title">Rules/CTAS</p>
+        <div class="stat-value" id="rules_per_ctas">—</div><div class="stat-sub">parsed from rules.py</div></div>
+    </div>
+  </div>
+
+  <!-- Accepted vs Rejected (By CTAS) -->
+  <div class="container mt-4" style="background:#0a0f35;">
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="kpi-card text-center">
+          <div style="font-size:48px;">✅</div>
+          <div class="kpi-title">Accepted (By CTAS)</div>
+          <div id="accLines" class="kpi-line mt-2">—</div>
+          <div class="kpi-sub">Click to view details</div>
+          <button class="btn btn-sm btn-outline-info mt-2" data-bs-toggle="modal" data-bs-target="#accModal">Open</button>
         </div>
-        <!-- Gauge Chart -->
-    </div>
-</div>
-        <div class="container mt-5" style="background-color: #0d0d38; padding: 20px; border-radius: 10px;">
-            <h2 class="text-start" style="color: #00d4ff;">CTAS Interpretation</h2>
-            <div class="d-flex flex-row justify-content-between align-items-start">
-                <!-- Left Section: Interpretation List -->
-                <div style="width: 50%; padding-right: 20px;">
-                    <table class="table table-borderless text-white">
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <ul class="list-group mt-3">
-                                        {% set sorted_reasons = reason|sort(attribute='ctas_level') %}
-                                        {% for item in sorted_reasons %}
-                                                                            <li 
-                                                                            class="background-color: transparent;"
-                                                                            class="list-group-item"
-                                        {% if 'CTAS 1' in item %}
-                                            style="color: #0000FF;"  
-                                        {% elif 'CTAS 2' in item %}
-                                            style="color: #FF0000;"  
-                                        {% elif 'CTAS 3' in item %}
-                                            style="color: #FFFF00; font-weight: bold;"
-                                        {% elif 'CTAS 4' in item %}
-                                            style="color: #00FF00;"
-                                        {% elif 'CTAS 5' in item %}
-                                            style="color: #FFFFFF; font-weight: bold;"  
-                                        {% endif %}
-                                    >
-    {{ item }}
-</li>
-                                        {% endfor %}
-                                    </ul>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <!-- Right Section: Radar Chart -->
-                <div style="width: 50%; text-align: center;">
-                    <img 
-                        src="/radar_chart?reason={{ reason | join(',') | urlencode }}" 
-                        alt="CTAS Radar Chart" 
-                        class="img-fluid"
-                        style="max-width: 100%;"
-                    />
-                </div>
-            </div>
+      </div>
+      <div class="col-md-6">
+        <div class="kpi-card text-center">
+          <div style="font-size:48px;">❌</div>
+          <div class="kpi-title">Rejected (By CTAS)</div>
+          <div id="rejLines" class="kpi-line mt-2">—</div>
+          <div class="kpi-sub">Click to view details</div>
+          <button class="btn btn-sm btn-outline-light mt-2" data-bs-toggle="modal" data-bs-target="#rejModal">Open</button>
         </div>
-        <style>
-            .ctas-1 {
-                color: #0000FF; /* Blue */
-            }
-            .ctas-2 {
-                color: #FF0000; /* Red */
-            }
-            .ctas-3 {
-                color: #FFFF00; /* Yellow */
-                font-weight: bold;
-            }
-            .ctas-4 {
-                color: #00FF00; /* Green */
-            }
-            .ctas-5 {
-                color: #FFFFFF; /* White */
-                font-weight: bold;
-            }
-            .list-group-item {
-                background-color: transparent; /* Keep the background clear */
-                border: none; /* Remove borders for the list items */
-            }
-        </style>
-    <div class="container mt-5 text-center" style="background-color: #1a1f36; padding: 20px; border-radius: 10px;">
-        <!-- Feedback Section -->
-        <h3 style="color: #00d4ff;" class="mt-4">We Value Your Feedback   </h3>        
-        <form id="feedbackForm" onsubmit="handleFeedback(event)">
-            <div class="form-group mt-3">
-                <label for="feedback_decision" style="color: #a8b1c0;">Do you accept the CTAS recommendations?</label>
-                <select id="feedback_decision" name="feedback_decision" class="form-select mt-2" required>
-                    <option value="">-- Select an option --</option>
-                    <option value="accept">Accept</option>
-                    <option value="decline">Decline</option>
-                </select>
-            </div>
-            <div class="form-group mt-3">
-                <label for="feedback_text" style="color: #a8b1c0;">If you declined, please let us know why:</label>
-                <textarea
-                    id="feedback_text"
-                    name="feedback_text"
-                    class="form-control mt-2"
-                    rows="3"
-                    placeholder="Enter your feedback here..."
-                    style="background-color: #2d344a; color: white; border: 1px solid #4b556d;"
-                ></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary mt-3" style="background-color: #00d4ff; border: none;">Submit Feedback</button>
-        </form>
+      </div>
     </div>
-    <!-- Pop-Up Notification -->
-    <div id="popupNotification" class="alert alert-success text-center" style="display: none; position: fixed; top: 20%; left: 50%; transform: translate(-50%, -50%); background-color: #1a1f36; color: #ffffff; border-radius: 10px; padding: 20px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5); z-index: 1000;">
-        Thank you for providing your feedback!
+  </div>
+
+  <!-- CTAS Interpretation + Radar -->
+  <div class="container mt-4" style="background:#0d0d38;">
+    <div class="d-flex justify-content-between align-items-center">
+      <h2 class="text-start">CTAS Interpretation</h2>
+      <div>
+        <input id="ruleSearchInput" class="form-control form-control-sm d-inline-block" style="width:220px"
+               placeholder="Search in rules (e.g. chest pain)">
+        <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#rulesModal" id="btnShowRules">
+          📚 Rules
+        </button>
+      </div>
     </div>
-    {% endif %}
+
+    <div class="interp-and-radar">
+      <!-- reasons -->
+      <div class="col-half" style="padding-right:20px;">
+        <table class="table table-borderless text-white">
+          <tbody><tr><td>
+            <ul class="list-group mt-3">
+              {% for item in reason %}
+                <li class="list-group-item"
+                    {% if 'CTAS 1' in item %} style="color:#0000FF;"
+                    {% elif 'CTAS 2' in item %} style="color:#FF0000;"
+                    {% elif 'CTAS 3' in item %} style="color:#FFFF00;font-weight:bold;"
+                    {% elif 'CTAS 4' in item %} style="color:#00FF00;"
+                    {% elif 'CTAS 5' in item %} style="color:#FFFFFF;font-weight:bold;"
+                    {% endif %}>{{ item }}</li>
+              {% endfor %}
+            </ul>
+          </td></tr></tbody>
+        </table>
+
+        <!-- نقطة توضيح -->
+        <div class="mt-3 p-3" style="background:#09122e; border:1px dashed #294c9d; border-radius:12px;">
+          <h6 style="color:#9ed0ff; margin-bottom:8px;">🧭 نقطة توضيح (إسناد القرار)</h6>
+
+          <!-- Tabs صغيرة للتوضيح -->
+          <div class="d-flex flex-wrap gap-2 mb-2">
+            <span class="chip chip-decisive">Decisive</span>
+            <span class="chip chip-considered">Considered</span>
+            <span class="chip chip-miss">Missing</span>
+          </div>
+
+          <div id="decisive_features" class="d-flex flex-wrap gap-2 mb-1"></div>
+          <div id="considered_features" class="d-flex flex-wrap gap-2 mb-1"></div>
+          <div id="miss_features" class="d-flex flex-wrap gap-2 mt-1"></div>
+
+          <small class="text-muted d-block mt-2">النقاط أعلاه توضح مدخلات اتاخدت في الحُسبان، وما أثَّر فعلاً مقابل اللي ما ظهرش تأثيره ويفضَّل مراجعته.</small>
+        </div>
+      </div>
+
+      <!-- radar interactive + fallback -->
+      <div class="col-half">
+        <div class="d-flex justify-content-end mb-1" style="gap:8px;">
+          <button id="radarMode" class="btn btn-sm btn-outline-info">Toggle %/count</button>
+        </div>
+        <div id="radarInteractive"></div>
+        <div class="radar-fallback text-center mt-2">
+          <img src="/radar_chart?reason={{ reason | join(',') | urlencode }}"
+               alt="CTAS Radar (fallback image)" class="img-fluid"/>
+          <div style="color:#a8b1c0;margin-top:8px;font-size:0.95rem;">Interactive ↑ / PNG fallback ↓</div>
+        </div>
+      </div>
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+  </div>
+
+  <!-- hidden context to pass chief/history and raw values -->
+  <div id="ctx"
+       data-chief="{{ chief_complaint|default('', true) }}"
+       data-history="{{ history|default('', true) }}"
+       style="display:none"></div>
+
+  <div id="vals"
+       data-systolic="{{ systolic|default('', true) }}"
+       data-diastolic="{{ diastolic|default('', true) }}"
+       data-temp="{{ temp|default('', true) }}"
+       data-hr="{{ hr|default('', true) }}"
+       data-rr="{{ rr|default('', true) }}"
+       data-o2_sat="{{ o2_sat|default('', true) }}"
+       data-gcs="{{ gcs|default('', true) }}"
+       data-blood_glucose="{{ blood_glucose|default('', true) }}"
+       data-pain_scale="{{ pain_scale|default('', true) }}"
+       data-location_of_pain="{{ location_of_pain|default('', true) }}"
+       data-pain_duration="{{ pain_duration|default('', true) }}"
+       data-symptoms_present="{{ symptoms_present|default('', true) }}"
+       data-distress_level="{{ distress_level|default('', true) }}"
+       data-blood_glucose_symptoms="{{ blood_glucose_symptoms|default('', true) }}"
+       style="display:none"></div>
+
+  <div id="graphNoData" class="alert alert-info d-none"
+       style="background:#0d2542;border:0;color:#9ed0ff; margin:10px 0;">
+    No matched rules to plot.
+  </div>
+
+  <!-- 3D Rules → CTAS Graph -->
+  <div class="container mt-4" style="background:#0d0d38;border-radius:12px;padding:20px;">
+    <div class="graph-toolbar">
+      <h2 class="m-0" style="color:#00d4ff;">3D Rules → CTAS Network</h2>
+      <div class="toolbar-right">
+        <button id="btnToggleSim" class="btn btn-sm btn-outline-info">⏯️ Pause</button>
+        <button id="btnOrbit" class="btn btn-sm btn-outline-light">🌍 Orbit ON</button>
+        <button id="btnResetCam" class="btn btn-sm btn-outline-light">🎯 Reset</button>
+        <button id="btnFullscreen" class="btn btn-sm btn-outline-info">🖥️ Full Screen</button>
+        <button id="btnToggleLabels" class="btn btn-sm btn-outline-info">🏷️ Show Labels</button>
+
+        <select id="focusCtas" class="form-select form-select-sm" style="width:auto;">
+          <option value="">Focus: All</option>
+          <option value="CTAS 1">CTAS 1</option>
+          <option value="CTAS 2">CTAS 2</option>
+          <option value="CTAS 3">CTAS 3</option>
+          <option value="CTAS 4">CTAS 4</option>
+          <option value="CTAS 5">CTAS 5</option>
+        </select>
+      </div>
+    </div>
+    <div id="graph3d">
+      <div class="text-center text-muted p-3 d-none" id="graphNoData">No matched rules to plot.</div>
+    </div>
+  </div>
+
+  <!-- Feedback -->
+  <div class="container mt-5 text-center">
+    <h3 style="color:#00d4ff;" class="mt-1">We Value Your Feedback</h3>
+    <form id="feedbackForm" onsubmit="handleFeedback(event)">
+      <div class="form-group mt-3">
+        <label for="feedback_decision" style="color:#a8b1c0;">Do you accept the CTAS recommendations?</label>
+        <select id="feedback_decision" name="feedback_decision" class="form-select mt-2">
+          <option value="">-- Select an option --</option>
+          <option value="accept">Accept</option>
+          <option value="decline">Decline</option>
+        </select>
+      </div>
+      <div class="form-group mt-3">
+        <label for="feedback_text" style="color:#a8b1c0;">If you declined, please let us know why:</label>
+        <textarea id="feedback_text" name="feedback_text" class="form-control mt-2" rows="3"
+                  placeholder="Enter your feedback here..."
+                  style="background:#111633;color:#fff;border:var(--border);"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary mt-3">Submit Feedback</button>
+    </form>
+  </div>
+
+  <!-- Pop-Up -->
+  <div id="popupNotification" class="alert alert-success text-center"
+       style="display:none; position:fixed; top:20%; left:50%; transform:translate(-50%,-50%);
+              background:#1a1f36; color:#fff; border-radius:12px; padding:20px;
+              box-shadow:0 4px 10px rgba(0,0,0,0.5); z-index:1000;">
+    Thank you for providing your feedback!
+  </div>
+  {% endif %}
+
+  <!-- Rules Modal -->
+  <div class="modal fade" id="rulesModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content" style="background:#0d0d38; color:#fff;">
+        <div class="modal-header border-0">
+          <h5 class="modal-title">Rules Browser</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body"><div id="rulesList" class="list-group"></div></div>
+        <div class="modal-footer border-0">
+          <button class="btn btn-outline-light" id="btnShowAllRules">Show All</button>
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Accepted Modal -->
+  <div class="modal fade" id="accModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content" style="background:#0d0d38; color:#fff;">
+        <div class="modal-header border-0">
+          <h5 class="modal-title">Accepted Cases</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body"><div id="accCases"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rejected Modal -->
+  <div class="modal fade" id="rejModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content" style="background:#0d0d38; color:#fff;">
+        <div class="modal-header border-0">
+          <h5 class="modal-title">Rejected Cases</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body"><div id="rejCases"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    function togglePainFields(){
+      const el = document.getElementById("pain_scale");
+      const loc = document.getElementById("location_field");
+      const dur = document.getElementById("duration_field");
+      if (!el) return;
+      if (!el.value || el.value === "0"){ loc.style.display="none"; dur.style.display="none"; }
+      else { loc.style.display="block"; dur.style.display="block"; }
+    }
+    function validatePainScale(){
+      const el = document.getElementById("pain_scale"); if (!el) return;
+      if (el.value === "") return;
+      if (el.value > 10) el.value = 10;
+      else if (el.value < 0) el.value = 0;
+    }
+    window.addEventListener('DOMContentLoaded', togglePainFields);
+
+    async function handleFeedback(e){
+      e.preventDefault();
+      const decision = document.getElementById("feedback_decision").value || "";
+      const feedbackText = document.getElementById("feedback_text").value || "No additional feedback provided";
+      try{
+        await fetch("/save-feedback", {
+          method:"POST", headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({ decision, feedback_decision:decision, feedback_text:feedbackText, timestamp: new Date().toISOString() })
+        });
+        const popup = document.getElementById("popupNotification");
+        popup.style.display = "block"; setTimeout(()=> popup.style.display="none", 3000);
+        document.getElementById("feedbackForm").reset();
+      }catch(err){ console.error("Error saving feedback:", err); }
+    }
+  </script>
+
+  <!-- Interactive (Radar + Network + Stats + Coverage + Suggest + Analytics) -->
+  <script>
+  (function(){
+    /* 1) Reasons */
+    const reasonLis = Array.from(document.querySelectorAll('.table ul.list-group li'));
+    const REASONS = reasonLis.map(li => (li.textContent || '').trim()).filter(Boolean);
+
+    /* 2) Counts */
+    const COUNTS = {"CTAS 1":0,"CTAS 2":0,"CTAS 3":0,"CTAS 4":0,"CTAS 5":0};
+    REASONS.forEach(t=>{
+      const up = t.toUpperCase();
+      Object.keys(COUNTS).forEach(k => { if (up.includes(k)) COUNTS[k]++; });
+    });
+    const totalMatched = REASONS.length;
+    const matchedEl = document.getElementById('matched_rules_now');
+    if(matchedEl) matchedEl.textContent = totalMatched;
+
+    /* Variables provided (count) */
+    const varsNowEl = document.getElementById('vars_now');
+    if(varsNowEl){
+      const summaryVals = Array.from(document.querySelectorAll('.container ul li span.text-white'))
+        .map(s => (s.textContent || '').trim());
+      const provided = summaryVals.filter(v => v !== '' && v !== '#').length;
+      varsNowEl.textContent = provided.toString();
+      const vc = document.getElementById('vars_count'); if(vc) vc.textContent = provided + " • ♾️";
+    }
+
+    /* 3) Radar */
+    const radarDiv = document.getElementById('radarInteractive');
+    const labels = Object.keys(COUNTS);
+    const counts = labels.map(k => COUNTS[k]);
+    const total = counts.reduce((a,b)=>a+b,0) || 1;
+    let probs = counts.map(v => v/total);
+    let radarPerc = true;
+
+    function drawRadar(){
+      const rVals = radarPerc ? probs : counts.map(v=>v||0);
+      const area = {type:'scatterpolar', r: rVals.concat([rVals[0]]), theta: labels.concat([labels[0]]),
+        fill:'toself', line:{width:2, color:'#59d2fd'}, opacity:0.6, hoverinfo:'skip'};
+      const marks = {type:'scatterpolar', mode:'markers+text', r:rVals, theta:labels,
+        marker:{ size:10 },
+        text: labels.map((l,i)=> radarPerc ? `${COUNTS[l]} • ${(probs[i]*100).toFixed(0)}%` : `${COUNTS[l]}` ),
+        textposition:'top center', hoverinfo:'text'};
+      Plotly.newPlot(radarDiv, [area, marks], {
+        paper_bgcolor:'#090e39', plot_bgcolor:'#090e39',
+        polar:{ bgcolor:'#090e39',
+          radialaxis:{ range: radarPerc ? [0,1] : [0, Math.max(1, ...counts)],
+                       tickfont:{color:'#c9e6ff'}, gridcolor:'#59d2fd', gridwidth:0.6, showline:false },
+          angularaxis:{ tickfont:{color:'#59d2fd'} } },
+        margin:{t:40,b:40,l:40,r:40}, showlegend:false
+      }, {displayModeBar:false, responsive:true});
+    }
+    if (radarDiv && window.Plotly) drawRadar();
+    document.getElementById('radarMode')?.addEventListener('click', ()=>{ radarPerc=!radarPerc; drawRadar(); });
+
+    /* 4) Coverage badges: decisive / considered / missing */
+    const usedDiv = document.getElementById('decisive_features');
+    const consDiv = document.getElementById('considered_features');
+    const missDiv = document.getElementById('miss_features');
+    if(usedDiv && consDiv && missDiv){
+      const txt = REASONS.join(' ').toLowerCase();
+      const ctx = document.getElementById('ctx')?.dataset||{};
+      const V   = document.getElementById('vals')?.dataset||{};
+      const feats = [
+        {label:'Chief Complaint', present: !!(ctx.chief||'').trim(), rx: new RegExp((ctx.chief||'').toLowerCase().split(/\W+/).filter(Boolean).slice(0,4).join('|')||'^$')},
+        {label:'History',        present: !!(ctx.history||'').trim(), rx: new RegExp((ctx.history||'').toLowerCase().split(/\W+/).filter(Boolean).slice(0,4).join('|')||'^$')},
+        {label:'GCS',            present: !!V.gcs, rx:/(gcs|conscious|altered|confusion|seizure)/},
+        {label:'O₂ Sat',         present: !!V.o2_sat, rx:/(o2|oxygen|shortness of breath|respiratory)/},
+        {label:'Temperature',    present: !!V.temp, rx:/(temperature|fever|septic|hypothermia)/},
+        {label:'Glucose',        present: !!V.blood_glucose, rx:/(glucose|mg\/dl|hypo|hyper|ketone|dka)/},
+        {label:'Pain',           present: !!V.pain_scale, rx:/(pain|headache|abdominal|chest pain)/},
+        {label:'Systolic',       present: !!V.systolic, rx:/(sbp|blood pressure|hypert|hypotension)/},
+        {label:'Diastolic',      present: !!V.diastolic, rx:/(dbp|blood pressure|hypert|hypotension)/},
+        {label:'Heart Rate',     present: !!V.hr, rx:/(tachycardia|bradycardia|pulse|heart rate)/},
+        {label:'RR',             present: !!V.rr, rx:/(rr|tachypnea|respiratory rate)/},
+        {label:'Pain Location',  present: !!V.location_of_pain, rx:/(central|peripheral)/},
+        {label:'Pain Duration',  present: !!V.pain_duration, rx:/(acute|chronic)/},
+        {label:'Distress',       present: !!V.distress_level, rx:/(distress)/},
+        {label:'BP Symptoms',    present: !!V.symptoms_present, rx:/(headache|nausea|sob|chest)/},
+        {label:'Glucose Symptoms',present: !!V.blood_glucose_symptoms, rx:/(dyspnea|dehydration|thirst|polyuria|weakness)/}
+      ];
+      feats.forEach(m=>{
+        const decisive = m.rx.test(txt);
+        const chip = document.createElement('span');
+        if(decisive){ chip.className='chip chip-decisive'; chip.textContent=m.label; usedDiv.appendChild(chip); }
+        else if(m.present){ chip.className='chip chip-considered'; chip.textContent=m.label+' (observed)'; consDiv.appendChild(chip); }
+        else{ chip.className='chip chip-miss'; chip.textContent=m.label+' (missing)'; missDiv.appendChild(chip); }
+      });
+    }
+
+    /* 5) 3D Network */
+    const ctxEl = document.getElementById('ctx');
+    const CHIEF = ctxEl?.dataset?.chief || '';
+    const HIST  = ctxEl?.dataset?.history || '';
+const graphEl = document.getElementById('graph3d');
+let orbital = true, rafId=null, Graph=null;
+
+// سيتم تعيينها بعد تحميل البيانات
+let ORBIT_CENTER = {x:0,y:0,z:0};
+
+function startOrbit(radius=200, elev=70, speed=0.0016){
+  let t = 0;
+  cancelAnimationFrame(rafId);
+  function animate(){
+    if(!orbital || !Graph) return;
+    t += speed;
+    const cx = ORBIT_CENTER.x, cy = ORBIT_CENTER.y, cz = ORBIT_CENTER.z;
+    const camPos = {
+      x: cx + radius * Math.sin(t),
+      y: cy + elev  * Math.sin(t*0.6),
+      z: cz + radius * Math.cos(t)
+    };
+    Graph.cameraPosition(camPos, ORBIT_CENTER); // lookAt patient
+    rafId = requestAnimationFrame(animate);
+  }
+  rafId = requestAnimationFrame(animate);
+}
+
+function stopOrbit(){ if(rafId){ cancelAnimationFrame(rafId); rafId=null; } }
+
+// Reset camera to a front view of Patient
+function resetCam(dist=260){
+  const cx = ORBIT_CENTER.x, cy = ORBIT_CENTER.y, cz = ORBIT_CENTER.z;
+  Graph.cameraPosition({x: cx, y: cy, z: cz + dist}, ORBIT_CENTER, 800);
+}
+    // Fullscreen Toggle
+    document.getElementById('btnFullscreen')?.addEventListener('click',()=>{
+      if (!document.fullscreenElement) graphEl.requestFullscreen?.(); else document.exitFullscreen?.();
+    });
+
+    // Labels Toggle
+    let showLabels = false;
+    document.getElementById('btnToggleLabels')?.addEventListener('click',()=>{
+      showLabels = !showLabels;
+      const btn = document.getElementById('btnToggleLabels');
+      btn.textContent = showLabels ? '🏷️ Hide Labels' : '🏷️ Show Labels';
+      if(!Graph) return;
+      Graph.nodeThreeObjectExtend(showLabels);
+      Graph.refresh();
+    });
+
+    function makeLabelSprite(text){
+      const canvas = document.createElement('canvas'); canvas.width=256; canvas.height=64;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle="rgba(0,0,0,0.5)"; ctx.fillRect(0,0,256,64);
+      ctx.font="32px Arial"; ctx.fillStyle="#fff"; ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.fillText(text, 128, 32);
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map:new THREE.CanvasTexture(canvas), transparent:true }));
+      sprite.scale.set(40,15,1); sprite.position.y += 18; return sprite;
+    }
+
+    if (graphEl && window.ForceGraph3D && window.THREE){
+      const REAS = REASONS;
+      if(REAS.length===0){ document.getElementById('graphNoData')?.classList.remove('d-none'); }
+      else{
+        const url = `/graph_data?reason=${encodeURIComponent(REAS.join(','))}&chief=${encodeURIComponent(CHIEF)}&history=${encodeURIComponent(HIST)}`;
+        fetch(url).then(r=>r.json()).then(data=>{
+          const CTAS_COLOR = {'CTAS 1':'#ff2d95','CTAS 2':'#00e5ff','CTAS 3':'#ffb000','CTAS 4':'#7cff6b','CTAS 5':'#c7c9d1'};
+          const CTAS_SIZE  = {'CTAS 1':9.0,'CTAS 2':7.5,'CTAS 3':6.0,'CTAS 4':5.0,'CTAS 5':4.0};
+
+          function makeSphere(r, color){ return new THREE.Mesh(new THREE.SphereGeometry(r,24,24), new THREE.MeshPhongMaterial({color,shininess:60})); }
+          function makeHuman(){
+            const g = new THREE.Group();
+            const matSkin = new THREE.MeshPhongMaterial({ color:'#ffd7b5', shininess:30 });
+            const matBody = new THREE.MeshPhongMaterial({ color:'#5dade2', shininess:40 });
+            const matLimb = new THREE.MeshPhongMaterial({ color:'#bdc3c7', shininess:20 });
+            const head = new THREE.Mesh(new THREE.SphereGeometry(6,16,16), matSkin); head.position.y=14; g.add(head);
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(4,5,14,12), matBody); body.position.y=5; g.add(body);
+            const legL = new THREE.Mesh(new THREE.CylinderGeometry(1.5,1.5,10,8), matLimb); legL.position.set(-2,-6,0); g.add(legL);
+            const legR = legL.clone(); legR.position.x = 2; g.add(legR);
+            const armL = new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.2,12,8), matLimb); armL.position.set(-6,8,0); armL.rotation.z=Math.PI/3; g.add(armL);
+            const armR = armL.clone(); armR.position.x=6; armR.rotation.z=-Math.PI/3; g.add(armR);
+            return g;
+          }
+          function makeGlow(color, size){
+            const canv=document.createElement('canvas'); canv.width=canv.height=128; const c=canv.getContext('2d');
+            const grd=c.createRadialGradient(64,64,10,64,64,64); grd.addColorStop(0,color); grd.addColorStop(1,'rgba(0,0,0,0)');
+            c.fillStyle=grd; c.fillRect(0,0,128,128);
+            const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map:new THREE.CanvasTexture(canv), transparent:true, opacity:0.35, depthWrite:false }));
+            spr.scale.set(size,size,1); spr.userData.pulse={t:0}; return spr;
+          }
+          function makeRing(r,color){
+            const ring=new THREE.Mesh(new THREE.RingGeometry(r*0.95,r*1.25,48), new THREE.MeshBasicMaterial({color,transparent:true,opacity:0.25,side:THREE.DoubleSide}));
+            ring.rotation.x=Math.PI/2; ring.userData.pulse={t:0}; return ring;
+          }
+
+          Graph = ForceGraph3D()(graphEl)
+            .backgroundColor('#0d0d38')
+            .nodeLabel(n => n.name || n.id)
+            .nodeThreeObject(n => {
+              if (n.id==='Patient'){ const h=makeHuman(); h.add(makeGlow('#9ed0ff',48)); if(showLabels) h.add(makeLabelSprite('Patient')); return h; }
+              if (String(n.id).startsWith('CTAS')){
+                const r=CTAS_SIZE[n.id]||5, color=CTAS_COLOR[n.id]||'#999'; const m=makeSphere(r,color);
+                if(n.inCount>=Math.max(3,Math.ceil((data.nodes||[]).reduce((mx,x)=>Math.max(mx,x.inCount||0),0)*0.6))){ m.add(makeRing(r*1.6,color)); m.add(makeGlow(color,r*6)); }
+                if(showLabels) m.add(makeLabelSprite(n.id)); return m;
+              }
+              if (n.id==='Chief'){ const m=makeSphere(5,'#f472b6'); if(showLabels) m.add(makeLabelSprite('Chief')); return m; }
+              if (n.id==='History'){ const m=makeSphere(5,'#a78bfa'); if(showLabels) m.add(makeLabelSprite('History')); return m; }
+              return makeSphere(3.8,'#9ed0ff');
+            })
+            .linkWidth(l=>l.value)
+            .cooldownTime(2400)
+            .d3VelocityDecay(0.25)
+            .linkDirectionalParticles(2)
+            .linkDirectionalParticleWidth(2)
+            .linkDirectionalParticleSpeed(()=> 0.004 + Math.random()*0.006);
+
+          Graph.d3Force('charge').strength(-240);
+          // Pin Patient at the origin
+const patient = (data.nodes || []).find(n => n.id === 'Patient');
+if (patient) {
+  patient.x = 0; patient.y = 0; patient.z = 0;
+  patient.fx = 0; patient.fy = 0; patient.fz = 0; // keep it fixed at origin
+}
+
+          Graph.graphData(data);
+          // بعد Graph.graphData(data)
+ORBIT_CENTER = patient ? {x: patient.x||0, y: patient.y||0, z: patient.z||0} : {x:0,y:0,z:0};
+startOrbit(); // يبدأ المدار حول الـ Patient
+
+          Graph.scene().add(new THREE.AmbientLight(0xffffff, 0.9));
+
+          const btn = document.getElementById('btnToggleSim'); let paused=false;
+          btn?.addEventListener('click', ()=>{ paused=!paused; if(paused){ Graph.pauseAnimation(); btn.textContent='▶️ Resume'; } else { Graph.resumeAnimation(); btn.textContent='⏯️ Pause'; } });
+
+          // Orbit toggle
+const btnOrbit = document.getElementById('btnOrbit');
+btnOrbit?.addEventListener('click', ()=>{
+  orbital = !orbital;
+  btnOrbit.textContent = orbital ? '🌍 Orbit ON' : '🌍 Orbit OFF';
+  if (orbital) startOrbit(); else stopOrbit();
+});
+
+// Reset
+document.getElementById('btnResetCam')?.addEventListener('click', ()=> resetCam());
+
+          startOrbit();
+
+          document.getElementById('btnResetCam')?.addEventListener('click', ()=>{ Graph.cameraPosition({x:0,y:0,z:260}, {x:0,y:0,z:0}, 800); });
+
+          const focus=document.getElementById('focusCtas');
+          focus?.addEventListener('change', (e)=>{
+            const val=e.target.value||''; if(!val){ Graph.cameraPosition({x:0,y:0,z:260},{x:0,y:0,z:0},800); return; }
+            const target=(data.nodes||[]).find(n=>n.id===val); if(!target) return;
+            const dist=120, {x=0,y=0,z=0}=target; Graph.cameraPosition({x:x+dist,y:y+dist,z:z+dist}, target, 1000);
+          });
+
+          const resize=()=>{ Graph.width(graphEl.clientWidth).height(graphEl.clientHeight); };
+          window.addEventListener('resize', resize); resize();
+
+          function pulseLoop(){ requestAnimationFrame(pulseLoop); if(!Graph) return;
+            Graph.scene().traverse(o=>{ if(o.userData && o.userData.pulse){ o.userData.pulse.t+=0.06; const s=1+0.12*Math.sin(o.userData.pulse.t); o.scale.set(s,s,1);
+              if(o.material){ o.material.opacity=0.18+0.14*(0.5+0.5*Math.sin(o.userData.pulse.t)); o.material.needsUpdate=true; } } });
+          }
+          pulseLoop();
+        });
+      }
+    }
+
+    /* 6) KPIs (simple) */
+    fetch('/analytics').then(r=>r.json()).then(a=>{
+      if(a){
+        const set=(id,val)=>{ const el=document.getElementById(id); if(el) el.textContent=(val ?? '—'); };
+        set('analytics_accept', a.accepted);
+        set('analytics_decline', a.declined);
+        set('analytics_samples', a.samples);
+        set('analytics_feedback', a.feedback);
+        const accCard=document.getElementById('analytics_accept_card'); if(accCard && a.accepted!=null) accCard.textContent=a.accepted;
+      }
+    }).catch(()=>{});
+
+    /* 6.b) Accepted/Rejected by CTAS + modals */
+    function fmtLines(obj, totals){
+      // "1:3(60%) | 2:0(0%) | ..."
+      return [1,2,3,4,5].map(i=>{
+        const k=`CTAS ${i}`; const cnt=(obj[k]?.count)||0; const t=totals[k]||0; const p=t?Math.round(cnt*100/t):0;
+        return `${i}:${cnt}(${p}%)`;
+      }).join(' | ');
+    }
+    fetch('/analytics_by_ctas').then(r=>r.json()).then(A=>{
+      if(!A) return;
+      document.getElementById('accLines').textContent = fmtLines(A.accepted, A.totals);
+      document.getElementById('rejLines').textContent = [1,2,3,4,5].map(i=>{
+        const k=`CTAS ${i}`; const cnt=(A.rejected[k]?.count)||0; return `${i}:${cnt}`;
+      }).join(' | ');
+
+      function fillCases(divId, arr, fallback){
+        const box=document.getElementById(divId); if(!box) return; box.innerHTML='';
+        const grp={}; (arr||[]).forEach(x=>{ (grp[x.ctas]=grp[x.ctas]||[]).push(x); });
+        [1,2,3,4,5].forEach(i=>{
+          const k=`CTAS ${i}`; const items=(grp[k] && grp[k].length?grp[k]:fallback[k]||[]);
+          const h=document.createElement('div');
+          h.innerHTML=`<h6 style="color:#9ed0ff;">${k}</h6>`;
+          if(!items.length){ const d=document.createElement('div'); d.className='text-muted mb-2'; d.textContent='—'; h.appendChild(d); box.appendChild(h); return; }
+          items.slice(0,40).forEach(it=>{
+            const line=document.createElement('div');
+            line.style.border='1px solid #203b7a'; line.style.borderRadius='10px'; line.style.padding='8px'; line.style.marginBottom='8px';
+            line.innerHTML=`<div><b>${it.timestamp||''}</b></div>
+                            <div><span style="color:#9fb6ff">Chief:</span> ${ (it.chief||'').toString().slice(0,120) }</div>
+                            <div><span style="color:#9fb6ff">History:</span> ${ (it.history||'').toString().slice(0,180) }</div>`;
+            h.appendChild(line);
+          });
+          box.appendChild(h);
+        });
+      }
+      fillCases('accCases', A.cases?.accepted||[], A.records||{});
+      fillCases('rejCases', A.cases?.rejected||[], A.records||{});
+    }).catch(()=>{});
+
+    /* 7) Rules modal (search) */
+    async function loadRules(term=""){
+      const r = await fetch('/rules_search'+(term?`?term=${encodeURIComponent(term)}`:'')); const arr = await r.json();
+      const box=document.getElementById('rulesList'); box.innerHTML=''; if(!arr.length){ box.innerHTML='<div class="text-muted">No rules found.</div>'; return; }
+      arr.forEach(o=>{
+        const c=document.createElement('div'); c.className='list-group-item';
+        c.style.background='transparent'; c.style.color='#cfe8ff'; c.style.border='1px solid #203b7a'; c.style.marginBottom='8px';
+        c.innerHTML=`<div><b>CTAS ${o.ctas}</b></div><div>${o.desc}</div>`; box.appendChild(c);
+      });
+    }
+    document.getElementById('btnShowRules')?.addEventListener('click', ()=>{ const t=document.getElementById('ruleSearchInput').value.trim(); loadRules(t); });
+    document.getElementById('btnShowAllRules')?.addEventListener('click', ()=> loadRules(""));
+    document.getElementById('ruleSearchInput')?.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ e.preventDefault(); loadRules(e.target.value.trim()); } });
+
+    /* 8) Suggest + soft validation (no clamping) */
+    const SAFE_BOUNDS={
+      systolic:[60,260], diastolic:[30,160], temp:[30,43], hr:[30,220],
+      rr:[6,35], o2_sat:[50,100], gcs:[3,15], blood_glucose:[20,600], pain_scale:[0,10]
+    };
+    function checkOOB(el, name){
+      if(!el) return;
+      const [mn,mx]=SAFE_BOUNDS[name]||[];
+      const v=parseFloat(el.value);
+      const oob = !isNaN(v) && (v<mn || v>mx);
+      el.classList.toggle('is-oob', oob);
+      const hint = el.parentElement.querySelector('.hint'); if(hint) hint.classList.toggle('show', oob);
+    }
+    document.addEventListener('input', (e)=>{
+      const name=e.target?.getAttribute?.('name'); if(!name || !(name in SAFE_BOUNDS)) return;
+      checkOOB(e.target, name);
+    });
+    function suggest(mode){
+      Object.entries(SAFE_BOUNDS).forEach(([n,[mn,mx]])=>{
+        const el=document.querySelector(`[name="${n}"]`); if(!el) return;
+        let v = (mode==='mid') ? (mn+mx)/2 : (Math.random()*(mx-mn)+mn);
+        if(n!=='temp') v = Math.round(v);
+        el.value=v; checkOOB(el, n);
+      });
+      togglePainFields();
+    }
+    document.getElementById('btnSuggestMid')?.addEventListener('click',()=>suggest('mid'));
+    document.getElementById('btnSuggestRand')?.addEventListener('click',()=>suggest('rand'));
+  })();
+  </script>
+
+  <!-- Bootstrap + Flowbite -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+          crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
 </body>
-<script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
 </html>
